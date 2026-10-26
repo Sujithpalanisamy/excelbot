@@ -7,8 +7,13 @@ import { BugDetailsModal } from './components/BugDetailsModal';
 import { ChatPanel } from './components/ChatPanel';
 import { ReportModal } from './components/ReportModal';
 import { SettingsModal } from './components/SettingsModal';
+import { SheetTabs } from './components/SheetTabs';
+import { DashboardSheet } from './components/DashboardSheet';
+import { ReportCatalogSheet } from './components/ReportCatalogSheet';
+import { ExecutiveReportSheet } from './components/ExecutiveReportSheet';
 import { AlertTriangle } from 'lucide-react';
 import type { BugItem, SettingsStatusResponse, SummaryDetail, ChatMessage, SettingsUpdateRequest } from './types';
+import { ALL_27_SHEETS } from './types';
 import { api } from './services/api';
 
 export const App: React.FC = () => {
@@ -16,7 +21,10 @@ export const App: React.FC = () => {
   const [settings, setSettings] = useState<SettingsStatusResponse | null>(null);
   const [selectedBug, setSelectedBug] = useState<BugItem | null>(null);
   const [currentSummary, setCurrentSummary] = useState<SummaryDetail | null>(null);
-  
+
+  // Active Sheet in Excel 27-Sheet Workspace
+  const [activeSheetId, setActiveSheetId] = useState<number>(1);
+
   // Modals state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
@@ -398,60 +406,116 @@ export const App: React.FC = () => {
           </div>
         )}
 
-        {/* Metric Cards */}
-        <MetricsOverview
-          bugs={bugs}
-          activeFilter={activeMetricFilter}
-          onSelectFilter={(f) => setActiveMetricFilter(f)}
+        {/* Excel 27-Sheet Workspace Tabs Strip */}
+        <SheetTabs
+          activeSheetId={activeSheetId}
+          onSelectSheet={setActiveSheetId}
+          totalBugsCount={bugs.length}
         />
 
+        {activeSheetId === 1 ? (
+          <>
+            {/* Metric Cards */}
+            <MetricsOverview
+              bugs={bugs}
+              activeFilter={activeMetricFilter}
+              onSelectFilter={(f) => setActiveMetricFilter(f)}
+            />
 
-        {/* Bug Input & Actions Hub */}
-        <BugInputPanel
-          onFetchSingle={handleFetchSingle}
-          onFetchBulk={handleFetchBulk}
-          onExportExcel={handleExportExcel}
-          onOpenPageReport={() => setIsReportOpen(true)}
-          onSyncNow={handleSyncNow}
-          isSyncing={isSyncing}
-          lastSyncInfo={lastSyncInfo}
-          isLoading={isLoading}
-        />
+            {/* Bug Input & Actions Hub */}
+            <BugInputPanel
+              onFetchSingle={handleFetchSingle}
+              onFetchBulk={handleFetchBulk}
+              onExportExcel={handleExportExcel}
+              onOpenPageReport={() => setIsReportOpen(true)}
+              onSyncNow={handleSyncNow}
+              isSyncing={isSyncing}
+              lastSyncInfo={lastSyncInfo}
+              isLoading={isLoading}
+            />
 
-        {/* Chatbot Panel */}
-        <ChatPanel
-          messages={chatMessages}
-          onSendMessage={handleSendChatMessage}
-          onClearHistory={handleClearChat}
-          isLoading={isChatLoading}
-        />
+            {/* Chatbot Panel */}
+            <ChatPanel
+              messages={chatMessages}
+              onSendMessage={handleSendChatMessage}
+              onClearHistory={handleClearChat}
+              isLoading={isChatLoading}
+            />
 
-        {/* Work Items Table */}
-        <BugTable
-          bugs={filteredBugs}
-          allBugs={bugs}
-          activeMetricFilter={activeMetricFilter}
-          onClearMetricFilter={() => setActiveMetricFilter('all')}
-          onSelectBug={handleSelectBug}
-          onUpdateClassification={handleUpdateClassification}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          selectedPage={selectedPage}
-          setSelectedPage={setSelectedPage}
-          selectedState={selectedState}
-          setSelectedState={setSelectedState}
-          selectedSeverity={selectedSeverity}
-          setSelectedSeverity={setSelectedSeverity}
-          selectedPriority={selectedPriority}
-          setSelectedPriority={setSelectedPriority}
-          selectedAssignee={selectedAssignee}
-          setSelectedAssignee={setSelectedAssignee}
-          selectedReporter={selectedReporter}
-          setSelectedReporter={setSelectedReporter}
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
-          onResetFilters={handleResetFilters}
-        />
+            {/* Work Items Table - Sheet 1: All Bugs */}
+            <BugTable
+              bugs={filteredBugs}
+              allBugs={bugs}
+              activeMetricFilter={activeMetricFilter}
+              onClearMetricFilter={() => setActiveMetricFilter('all')}
+              onSelectBug={handleSelectBug}
+              onUpdateClassification={handleUpdateClassification}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              selectedPage={selectedPage}
+              setSelectedPage={setSelectedPage}
+              selectedState={selectedState}
+              setSelectedState={setSelectedState}
+              selectedSeverity={selectedSeverity}
+              setSelectedSeverity={setSelectedSeverity}
+              selectedPriority={selectedPriority}
+              setSelectedPriority={setSelectedPriority}
+              selectedAssignee={selectedAssignee}
+              setSelectedAssignee={setSelectedAssignee}
+              selectedReporter={selectedReporter}
+              setSelectedReporter={setSelectedReporter}
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
+              onResetFilters={handleResetFilters}
+            />
+          </>
+        ) : activeSheetId === 2 ? (
+          <DashboardSheet
+            allBugs={bugs}
+            onDownloadExcel={handleDownloadExcel}
+            onNavigateToSheet1WithFilter={(fType, fVal) => {
+              setActiveSheetId(1);
+              if (fType === 'metric') setActiveMetricFilter(fVal);
+              if (fType === 'page') setSelectedPage(fVal);
+            }}
+          />
+        ) : activeSheetId === 21 ? (
+          <ReportCatalogSheet />
+        ) : activeSheetId === 27 ? (
+          <ExecutiveReportSheet
+            allBugs={bugs}
+            onDownloadExcel={handleDownloadExcel}
+          />
+        ) : (
+          <div className="bg-white border border-slate-200 rounded-xl p-8 sm:p-12 text-center max-w-2xl mx-auto my-8 shadow-2xs">
+            <div className="w-14 h-14 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center mx-auto mb-4 border border-sky-100 font-bold text-xl font-display shadow-2xs">
+              #{activeSheetId}
+            </div>
+            <h3 className="text-lg sm:text-xl font-bold font-display text-slate-900 mb-2">
+              Sheet {activeSheetId}: {ALL_27_SHEETS.find(s => s.id === activeSheetId)?.name}
+            </h3>
+            <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto leading-relaxed">
+              {ALL_27_SHEETS.find(s => s.id === activeSheetId)?.description}
+            </p>
+            <div className="p-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium mb-6 text-left space-y-1.5">
+              <div className="font-bold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-amber-500" />
+                Step-by-Step Transition Plan:
+              </div>
+              <p>
+                We are building each of the 27 Excel sheets directly inside this application one by one.
+                Currently, <strong>Sheet 1 (All Bugs)</strong>, <strong>Sheet 2 (Dashboard)</strong>, <strong>Sheet 21 (Reports Catalog)</strong>, and <strong>Sheet 27 (Executive Report)</strong> are live with real-time calculations.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveSheetId(1)}
+              className="btn-sky px-5 py-2.5 text-xs font-semibold rounded-lg shadow-2xs cursor-pointer inline-flex items-center gap-2"
+            >
+              <span>Go to Sheet 1: All Bugs</span>
+            </button>
+          </div>
+        )}
       </main>
 
       {/* Modals */}

@@ -11,6 +11,9 @@ export function buildReportSummary(bugs?: BugItem[]): ReportSummary {
   let closedBugs = 0;
   let criticalBugs = 0;
   let highPriorityBugs = 0;
+  let reopenCount = 0;
+  let uiCount = 0;
+  let functionalCount = 0;
 
   const severityCounts: Record<string, number> = {
     '1 - Critical': 0,
@@ -35,6 +38,16 @@ export function buildReportSummary(bugs?: BugItem[]): ReportSummary {
     const st = b.state || 'New';
     const stLower = st.toLowerCase();
     stateCounts[st] = (stateCounts[st] || 0) + 1;
+
+    const tagsLower = (b.tags || '').toLowerCase();
+    if (tagsLower.includes('reopen')) {
+      reopenCount++;
+    }
+    if (tagsLower.includes('ui') || (b.title || '').toLowerCase().includes('ui')) {
+      uiCount++;
+    } else {
+      functionalCount++;
+    }
 
     if (['new', 'proposed', 'to do'].includes(stLower)) {
       openBugs++;
@@ -132,6 +145,11 @@ export function buildReportSummary(bugs?: BugItem[]): ReportSummary {
       critical_bugs: assigneeMap[k].critical,
     }));
 
+  const reopenRatePercent = totalBugs > 0 ? Number(((reopenCount / totalBugs) * 100).toFixed(1)) : 0;
+  const uiPercent = totalBugs > 0 ? Number(((uiCount / totalBugs) * 100).toFixed(1)) : 0;
+  const functionalPercent = totalBugs > 0 ? Number(((functionalCount / totalBugs) * 100).toFixed(1)) : 0;
+  const fixRatePercent = totalBugs > 0 ? Number((((resolvedBugs + closedBugs) / totalBugs) * 100).toFixed(1)) : 0;
+
   return {
     generated_at: new Date().toISOString().replace('T', ' ').slice(0, 19),
     total_bugs: totalBugs,
@@ -141,6 +159,13 @@ export function buildReportSummary(bugs?: BugItem[]): ReportSummary {
     closed_bugs: closedBugs,
     critical_severity_bugs: criticalBugs,
     high_priority_bugs: highPriorityBugs,
+    reopen_count: reopenCount,
+    reopen_rate_percent: reopenRatePercent,
+    ui_count: uiCount,
+    functional_count: functionalCount,
+    ui_percent: uiPercent,
+    functional_percent: functionalPercent,
+    fix_rate_percent: fixRatePercent,
     page_breakdown: pageRows,
     assignee_breakdown: assigneeRows,
     severity_breakdown: severityCounts,

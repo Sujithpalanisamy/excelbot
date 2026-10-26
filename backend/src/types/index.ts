@@ -65,6 +65,13 @@ export interface ReportSummary {
   closed_bugs: number;
   critical_severity_bugs: number;
   high_priority_bugs: number;
+  reopen_count?: number;
+  reopen_rate_percent?: number;
+  ui_count?: number;
+  functional_count?: number;
+  ui_percent?: number;
+  functional_percent?: number;
+  fix_rate_percent?: number;
   page_breakdown: PageSummaryRow[];
   assignee_breakdown: AssigneeSummaryRow[];
   severity_breakdown: Record<string, number>;

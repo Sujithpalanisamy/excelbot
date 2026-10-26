@@ -10,7 +10,9 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  X
+  X,
+  Download,
+  ListFilter
 } from 'lucide-react';
 import type { BugItem } from '../types';
 import { HRMS_PAGES, STANDARD_STATES, STANDARD_SEVERITIES } from '../types';
@@ -69,6 +71,7 @@ export const BugTable: React.FC<BugTableProps> = ({
   const [updatingId, setUpdatingId] = useState<number | null>(null);
   const [pageSize, setPageSize] = useState<number>(10);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [showReproColumn, setShowReproColumn] = useState<boolean>(true);
 
   // Use allBugs as master reference so dropdowns never collapse when filtered
   const masterBugs = allBugs && allBugs.length > 0 ? allBugs : bugs;
@@ -239,16 +242,64 @@ export const BugTable: React.FC<BugTableProps> = ({
     }
   };
 
+  const handleExportSheet1Csv = () => {
+    const headers = [
+      'Bug ID',
+      'Work Item Type',
+      'Title',
+      'Reproduction Steps',
+      'Description',
+      'State',
+      'Severity',
+      'Priority',
+      'Assigned To',
+      'Reporter',
+      'Created Date',
+      'Page Name',
+      'Tags',
+      'Bug URL'
+    ];
+    const escapeCsv = (str: any) => `"${String(str || '').replace(/"/g, '""')}"`;
+    const rows = bugs.map(b => [
+      b.id,
+      escapeCsv(b.work_item_type || 'Bug'),
+      escapeCsv(b.title),
+      escapeCsv(b.repro_steps),
+      escapeCsv(b.description),
+      escapeCsv(b.state),
+      escapeCsv(b.severity),
+      b.priority ?? '',
+      escapeCsv(b.assigned_to),
+      escapeCsv(b.reporter),
+      escapeCsv(b.created_date),
+      escapeCsv(b.page_name),
+      escapeCsv(b.tags),
+      escapeCsv(b.bug_url)
+    ]);
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Sheet1_All_Bugs_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <section id="work-items-section" aria-labelledby="work-items-heading" className="w-full enterprise-card overflow-hidden mb-6">
       {/* Table Header & Search */}
       <div className="p-4 sm:p-5 flex items-center justify-between flex-wrap gap-3 border-b border-slate-200/80 bg-white">
         <div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <span className="w-7 h-7 rounded-lg bg-sky-600 text-white flex items-center justify-center font-bold text-xs shadow-2xs">
+              #1
+            </span>
             <h2 id="work-items-heading" className="text-base sm:text-lg font-bold font-display text-slate-900">
-              Work Items & Defect Log
+              Sheet 1: All Bugs
             </h2>
-            <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 tabular-nums">
+            <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 tabular-nums">
               {bugs.length} {bugs.length === 1 ? 'item' : 'items'}
             </span>
             {totalPages > 1 && (
@@ -258,24 +309,51 @@ export const BugTable: React.FC<BugTableProps> = ({
             )}
           </div>
           <p className="text-xs text-slate-500 font-sans mt-0.5">
-            Synchronized with Azure Boards v7.1 and Primary Excel Tracker • 100% Unique Verified
+            Synchronized directly from Azure DevOps • Includes Bug ID, Title, Repro Steps, State, Severity, Assignee &amp; Module
           </p>
         </div>
 
-        <div className="relative w-full sm:w-80">
-          <label htmlFor="table-search-input" className="sr-only">
-            Search work items by ID, title, description, or tags
-          </label>
-          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
-          <input
-            id="table-search-input"
-            name="table_search"
-            type="search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by ID, title, tags, or description..."
-            className="h-9 w-full pl-8 pr-3 text-xs rounded-lg bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:border-sky-600 focus:ring-1 focus:ring-sky-600 focus:outline-none transition-all shadow-2xs"
-          />
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Toggle Repro Steps column button */}
+          <button
+            id="btn-toggle-repro-column"
+            type="button"
+            onClick={() => setShowReproColumn(!showReproColumn)}
+            className="h-9 btn-secondary inline-flex items-center gap-1.5 px-3 text-xs font-medium rounded-md focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:outline-none cursor-pointer"
+            title="Toggle Reproduction Steps column visibility"
+          >
+            <ListFilter className="w-3.5 h-3.5 text-slate-500" aria-hidden="true" />
+            <span>{showReproColumn ? 'Hide Repro Steps' : 'Show Repro Steps'}</span>
+          </button>
+
+          {/* Export Sheet 1 to CSV button */}
+          <button
+            id="btn-export-sheet1-csv"
+            type="button"
+            onClick={handleExportSheet1Csv}
+            className="h-9 btn-secondary inline-flex items-center gap-1.5 px-3 text-xs font-semibold text-slate-700 rounded-md hover:text-sky-700 hover:border-sky-300 focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:outline-none cursor-pointer shadow-2xs"
+            title="Download Sheet 1 as CSV file"
+          >
+            <Download className="w-3.5 h-3.5 text-sky-600" aria-hidden="true" />
+            <span>Export Sheet 1 (.csv)</span>
+          </button>
+
+          {/* Search Input */}
+          <div className="relative w-full sm:w-72">
+            <label htmlFor="table-search-input" className="sr-only">
+              Search work items by ID, title, description, or tags
+            </label>
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+            <input
+              id="table-search-input"
+              name="table_search"
+              type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search ID, title, steps, tags..."
+              className="h-9 w-full pl-8 pr-3 text-xs rounded-lg bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:border-sky-600 focus:ring-1 focus:ring-sky-600 focus:outline-none transition-all shadow-2xs"
+            />
+          </div>
         </div>
       </div>
 
@@ -462,22 +540,25 @@ export const BugTable: React.FC<BugTableProps> = ({
           <caption className="sr-only">Live retrieved Azure DevOps bugs and work items</caption>
           <thead>
             <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-display font-semibold uppercase tracking-wider text-[11px]">
-              <th scope="col" className="py-2.5 px-3.5 w-[95px] whitespace-nowrap">ID & Type</th>
-              <th scope="col" className="py-2.5 px-3.5 min-w-[280px]">Title</th>
-              <th scope="col" className="py-2.5 px-3.5 min-w-[200px]">Module / Page Override</th>
+              <th scope="col" className="py-2.5 px-3.5 w-[95px] whitespace-nowrap">ID &amp; Type</th>
+              <th scope="col" className="py-2.5 px-3.5 min-w-[260px]">Title</th>
+              {showReproColumn && (
+                <th scope="col" className="py-2.5 px-3.5 min-w-[280px]">Reproduction Steps</th>
+              )}
               <th scope="col" className="py-2.5 px-3.5 text-center w-[115px] whitespace-nowrap">State</th>
               <th scope="col" className="py-2.5 px-3.5 text-center w-[115px] whitespace-nowrap">Severity</th>
               <th scope="col" className="py-2.5 px-3.5 text-center w-[70px] whitespace-nowrap">Pri</th>
-              <th scope="col" className="py-2.5 px-3.5 min-w-[150px]">Assignee</th>
-              <th scope="col" className="py-2.5 px-3.5 min-w-[150px]">Created By</th>
-              <th scope="col" className="py-2.5 px-3.5 min-w-[145px] whitespace-nowrap">Created Date</th>
-              <th scope="col" className="py-2.5 px-3.5 text-right w-[100px] whitespace-nowrap">Actions</th>
+              <th scope="col" className="py-2.5 px-3.5 min-w-[190px]">Module / Page</th>
+              <th scope="col" className="py-2.5 px-3.5 min-w-[140px]">Assignee</th>
+              <th scope="col" className="py-2.5 px-3.5 min-w-[140px]">Created By</th>
+              <th scope="col" className="py-2.5 px-3.5 min-w-[135px] whitespace-nowrap">Created Date</th>
+              <th scope="col" className="py-2.5 px-3.5 text-right w-[90px] whitespace-nowrap">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {bugs.length === 0 ? (
               <tr>
-                <td colSpan={10} className="py-12 text-center text-slate-400">
+                <td colSpan={showReproColumn ? 11 : 10} className="py-12 text-center text-slate-400">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <Search className="w-7 h-7 stroke-1 text-slate-300" aria-hidden="true" />
                     <p className="text-sm font-medium text-slate-600">No work items match the current filters or query.</p>
@@ -539,6 +620,49 @@ export const BugTable: React.FC<BugTableProps> = ({
                       )}
                     </td>
 
+                    {/* Reproduction Steps */}
+                    {showReproColumn && (
+                      <td className="py-2.5 px-3.5 max-w-[300px]">
+                        {b.repro_steps ? (
+                          <button
+                            id={`btn-repro-steps-${b.id}`}
+                            type="button"
+                            onClick={() => onSelectBug(b)}
+                            className="text-left w-full group cursor-pointer block"
+                            title="Click to view full reproduction steps and acceptance criteria"
+                          >
+                            <div className="text-slate-700 font-mono text-[11px] line-clamp-2 leading-relaxed bg-slate-50 group-hover:bg-sky-50 group-hover:text-sky-900 group-hover:border-sky-300 p-1.5 rounded border border-slate-200 transition-colors">
+                              {b.repro_steps.replace(/\*Description\*|\*Steps to Reproduce\*|h3\./gi, '').trim()}
+                            </div>
+                          </button>
+                        ) : (
+                          <span className="text-slate-400 italic text-[11px]">No repro steps</span>
+                        )}
+                      </td>
+                    )}
+
+                    {/* State */}
+                    <td className="py-2.5 px-3.5 text-center whitespace-nowrap">
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${stateStyle.badge}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${stateStyle.dot}`} aria-hidden="true" />
+                        <span>{b.state}</span>
+                      </span>
+                    </td>
+
+                    {/* Severity */}
+                    <td className="py-2.5 px-3.5 text-center whitespace-nowrap">
+                      <span className={`inline-block px-2 py-0.5 rounded-full text-[11px] border ${getSeverityBadge(b.severity)}`}>
+                        {b.severity}
+                      </span>
+                    </td>
+
+                    {/* Priority */}
+                    <td className="py-2.5 px-3.5 text-center whitespace-nowrap">
+                      <span className="font-mono tabular-nums font-semibold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-[11px]">
+                        P{b.priority}
+                      </span>
+                    </td>
+
                     {/* Module / Page dropdown */}
                     <td className="py-2.5 px-3.5">
                       <div className="relative">
@@ -570,28 +694,6 @@ export const BugTable: React.FC<BugTableProps> = ({
                           )}
                         </div>
                       </div>
-                    </td>
-
-                    {/* State */}
-                    <td className="py-2.5 px-3.5 text-center whitespace-nowrap">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${stateStyle.badge}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${stateStyle.dot}`} aria-hidden="true" />
-                        <span>{b.state}</span>
-                      </span>
-                    </td>
-
-                    {/* Severity */}
-                    <td className="py-2.5 px-3.5 text-center whitespace-nowrap">
-                      <span className={`inline-block px-2 py-0.5 rounded-full text-[11px] border ${getSeverityBadge(b.severity)}`}>
-                        {b.severity}
-                      </span>
-                    </td>
-
-                    {/* Priority */}
-                    <td className="py-2.5 px-3.5 text-center whitespace-nowrap">
-                      <span className="font-mono tabular-nums font-semibold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-[11px]">
-                        P{b.priority}
-                      </span>
                     </td>
 
                     {/* Assignee */}
