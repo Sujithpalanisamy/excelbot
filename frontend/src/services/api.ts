@@ -1,5 +1,6 @@
 import type { 
   BugItem, SummaryDetail, ReportSummary, DashboardExcelData,
+  PendingWithDeveloperData, BugLifecycleData, AzureImportItem, BugTrackerItem,
   SettingsStatusResponse, SettingsUpdateRequest, ChatResponse 
 } from '../types';
 
@@ -127,6 +128,30 @@ export const api = {
   async getDashboardExcelData(): Promise<DashboardExcelData> {
     const res = await fetch(`${API_BASE}/reports/dashboard-excel`);
     if (!res.ok) throw new Error('Failed to get dashboard excel data');
+    return res.json();
+  },
+
+  async getPendingWithDeveloperData(): Promise<PendingWithDeveloperData> {
+    const res = await fetch(`${API_BASE}/reports/pending-with-developer`);
+    if (!res.ok) throw new Error('Failed to get pending with developer data');
+    return res.json();
+  },
+
+  async getBugLifecycleData(): Promise<BugLifecycleData> {
+    const res = await fetch(`${API_BASE}/reports/bug-lifecycle`);
+    if (!res.ok) throw new Error('Failed to get bug lifecycle data');
+    return res.json();
+  },
+
+  async getAzureImportData(): Promise<AzureImportItem[]> {
+    const res = await fetch(`${API_BASE}/reports/azure-import`);
+    if (!res.ok) throw new Error('Failed to get azure import data');
+    return res.json();
+  },
+
+  async getBugTrackerData(): Promise<BugTrackerItem[]> {
+    const res = await fetch(`${API_BASE}/reports/bug-tracker`);
+    if (!res.ok) throw new Error('Failed to get bug tracker data');
     return res.json();
   },
 

@@ -9,6 +9,10 @@ import { ReportModal } from './components/ReportModal';
 import { SettingsModal } from './components/SettingsModal';
 import { SheetTabs } from './components/SheetTabs';
 import { DashboardSheet } from './components/DashboardSheet';
+import { AzureImportSheet } from './components/AzureImportSheet';
+import { BugTrackerSheet } from './components/BugTrackerSheet';
+import { BugLifecycleSheet } from './components/BugLifecycleSheet';
+import { PendingWithDeveloperSheet } from './components/PendingWithDeveloperSheet';
 import { ReportCatalogSheet } from './components/ReportCatalogSheet';
 import { ExecutiveReportSheet } from './components/ExecutiveReportSheet';
 import { AlertTriangle } from 'lucide-react';
@@ -477,10 +481,46 @@ export const App: React.FC = () => {
               setActiveSheetId(1);
               if (fType === 'metric') setActiveMetricFilter(fVal);
               if (fType === 'page') setSelectedPage(fVal);
+              if (fType === 'developer') setSelectedAssignee(fVal);
+            }}
+          />
+        ) : activeSheetId === 4 ? (
+          <AzureImportSheet
+            onDownloadExcel={handleDownloadExcel}
+            onNavigateToSheet1WithFilter={(fType, fVal) => {
+              setActiveSheetId(1);
+              if (fType === 'developer') setSelectedAssignee(fVal);
+              if (fType === 'page') setSelectedPage(fVal);
+            }}
+          />
+        ) : activeSheetId === 5 ? (
+          <BugTrackerSheet
+            onDownloadExcel={handleDownloadExcel}
+            onNavigateToSheet1WithFilter={(fType, fVal) => {
+              setActiveSheetId(1);
+              if (fType === 'developer') setSelectedAssignee(fVal);
+              if (fType === 'page') setSelectedPage(fVal);
+            }}
+          />
+        ) : activeSheetId === 8 ? (
+          <BugLifecycleSheet
+            onDownloadExcel={handleDownloadExcel}
+            onNavigateToSheet1WithFilter={(fType, fVal) => {
+              setActiveSheetId(1);
+              if (fType === 'page') setSelectedPage(fVal);
             }}
           />
         ) : activeSheetId === 21 ? (
           <ReportCatalogSheet />
+        ) : activeSheetId === 24 ? (
+          <PendingWithDeveloperSheet
+            onDownloadExcel={handleDownloadExcel}
+            onNavigateToSheet1WithFilter={(fType, fVal) => {
+              setActiveSheetId(1);
+              if (fType === 'developer') setSelectedAssignee(fVal);
+              if (fType === 'page') setSelectedPage(fVal);
+            }}
+          />
         ) : activeSheetId === 27 ? (
           <ExecutiveReportSheet
             allBugs={bugs}
