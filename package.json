@@ -1,0 +1,17 @@
+{
+  "name": "azure-bug-assistant",
+  "version": "2.0.0",
+  "description": "Azure DevOps Boards Bug Assistant with Excel Integration (Node.js & React 19)",
+  "private": true,
+  "scripts": {
+    "dev": "npx -y concurrently -k -n \"backend,frontend\" -c \"blue,cyan\" \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+    "build:backend": "npm --prefix backend run build",
+    "build:frontend": "npm --prefix frontend run build",
+    "start": "node backend/dist/server.js",
+    "sync-task": "npm --prefix backend run sync-task",
+    "preview": "npm --prefix frontend run preview"
+  }
+}

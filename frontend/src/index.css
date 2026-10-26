@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+@theme {
+  --color-sky-50: #f0f9ff;
+  --color-sky-100: #e0f2fe;
+  --color-sky-200: #bae6fd;
+  --color-sky-300: #7dd3fc;
+  --color-sky-400: #38bdf8;
+  --color-sky-500: #0ea5e9;
+  --color-sky-600: #0284c7;
+  --color-sky-700: #0369a1;
+  --color-sky-800: #075985;
+  --color-sky-900: #0c4a6e;
+  --color-sky-950: #082f49;
+
+  --color-cyan-50: #ecfeff;
+  --color-cyan-100: #cffafe;
+  --color-cyan-500: #06b6d4;
+  --color-cyan-600: #0891b2;
+
+  --font-display: 'Roboto', sans-serif;
+  --font-sans: 'Roboto', sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
+}
+
+:root {
+  --app-bg: #f8fafc;
+  --app-card: #ffffff;
+  --app-card-border: #e2e8f0;
+  --app-text: #0f172a;
+  --app-text-muted: #475569;
+  --app-text-dim: #64748b;
+  --app-primary: #0284c7;
+  --app-primary-hover: #0369a1;
+  --app-primary-light: #f0f9ff;
+}
+
+*, *::before, *::after {
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  background-color: #f8fafc;
+  background-image: radial-gradient(rgba(2, 132, 199, 0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-attachment: fixed;
+  color: var(--app-text);
+  font-family: 'Roboto', sans-serif;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography Helpers - Strictly Roboto & Roboto Mono */
+.font-display {
+  font-family: 'Roboto', sans-serif;
+}
+
+.font-mono, code, kbd, samp, pre {
+  font-family: 'Roboto Mono', monospace !important;
+}
+
+.font-sans {
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Corporate Enterprise Card Utility */
+.enterprise-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.875rem;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05);
+  transition: all 0.15s ease-in-out;
+}
+
+.enterprise-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+}
+
+/* Corporate Primary Button */
+.btn-sky {
+  background-color: #0284c7;
+  color: #ffffff;
+  border: 1px solid #0369a1;
+  box-shadow: 0 1px 2px 0 rgba(2, 132, 199, 0.2);
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-sky:hover {
+  background-color: #0369a1;
+  border-color: #075985;
+  box-shadow: 0 2px 4px 0 rgba(2, 132, 199, 0.3);
+  transform: translateY(-0.5px);
+}
+
+.btn-sky:active {
+  background-color: #075985;
+  transform: translateY(0);
+}
+
+/* Professional Secondary Button */
+.btn-secondary {
+  background-color: #ffffff;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-secondary:hover {
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+/* Refined Corporate Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
