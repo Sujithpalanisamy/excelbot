@@ -1,16 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  BarChart3, 
-  AlertTriangle, 
-  CheckCircle2, 
-  RotateCcw, 
-  ShieldAlert, 
   Download, 
-  Activity, 
-  Boxes,
+  Printer, 
+  FileSpreadsheet,
   Loader2
 } from 'lucide-react';
-import type { ReportSummary, BugItem } from '../types';
+import type { DashboardExcelData, BugItem } from '../types';
 import { api } from '../services/api';
 
 interface DashboardSheetProps {
@@ -24,311 +19,767 @@ export const DashboardSheet: React.FC<DashboardSheetProps> = ({
   onNavigateToSheet1WithFilter,
   onDownloadExcel,
 }) => {
-  const [summary, setSummary] = useState<ReportSummary | null>(null);
+  const [data, setData] = useState<DashboardExcelData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<'excel' | 'live'>('excel');
+  const [asOfDate, setAsOfDate] = useState('26-Oct-2026');
 
   useEffect(() => {
     let isMounted = true;
-    const fetchReport = async () => {
+    const loadDashboardData = async () => {
       try {
-        const data = await api.getReportSummary();
-        if (isMounted) setSummary(data);
+        const res = await api.getDashboardExcelData();
+        if (isMounted) {
+          setData(res);
+          if (res.asOfDate) setAsOfDate(res.asOfDate);
+        }
       } catch (err) {
-        console.error('Failed to load dashboard summary:', err);
+        console.error('Failed to load excel dashboard data:', err);
       } finally {
         if (isMounted) setIsLoading(false);
       }
     };
-    fetchReport();
+
+    loadDashboardData();
     return () => { isMounted = false; };
   }, [allBugs]);
 
-  const totalBugs = summary?.total_bugs || allBugs.length;
-  const openCount = summary?.open_bugs || 0;
-  const activeCount = summary?.active_bugs || 0;
-  const closedCount = (summary?.closed_bugs || 0) + (summary?.resolved_bugs || 0);
-  const criticalCount = summary?.critical_severity_bugs || 0;
-  const reopenRate = summary?.reopen_rate_percent ?? 0;
-  const uiPercent = summary?.ui_percent ?? 0;
-  const functionalPercent = summary?.functional_percent ?? 0;
-  const fixRate = summary?.fix_rate_percent ?? 0;
+  const handleExportCsv = () => {
+    if (!data) return;
+    const lines: string[] = [];
+    lines.push('PROJECT DEVELOPMENT & QA QUALITY DASHBOARD');
+    lines.push('');
+    lines.push('Project KPI,Value,Meaning,,Quality KPI,Value,Meaning');
+    
+    const maxKpiRows = Math.max(data.projectKpis.length, data.qualityKpis.length);
+    for (let i = 0; i < maxKpiRows; i++) {
+      const p = data.projectKpis[i] || { label: '', value: '', meaning: '' };
+      const q = data.qualityKpis[i] || { label: '', value: '', meaning: '' };
+      lines.push(`"${p.label}","${p.value}","${p.meaning}",,"${q.label}","${q.value}","${q.meaning}"`);
+    }
 
-  if (isLoading) {
+    lines.push('');
+    lines.push('Bug Status,Count,,Severity,Count');
+    const maxStatusRows = Math.max(data.bugStatus.length, data.severity.length);
+    for (let i = 0; i < maxStatusRows; i++) {
+      const s = data.bugStatus[i] || { status: '', count: '' };
+      const v = data.severity[i] || { severity: '', count: '' };
+      lines.push(`"${s.status}","${s.count}",,"${v.severity}","${v.count}"`);
+    }
+
+    lines.push('');
+    lines.push('Developer,Dev Accuracy %,Fix Accuracy %,Final Score %,,Module,Progress %,Accuracy %');
+    const maxDevRows = Math.max(data.developerScorecard.length, data.moduleQuality.length);
+    for (let i = 0; i < maxDevRows; i++) {
+      const d = data.developerScorecard[i] || { developer: '', devAccuracy: '', fixAccuracy: '', finalScore: '' };
+      const m = data.moduleQuality[i] || { module: '', progress: '', accuracy: '' };
+      lines.push(`"${d.developer}","${d.devAccuracy}","${d.fixAccuracy}","${d.finalScore}",,"${m.module}","${m.progress}","${m.accuracy}"`);
+    }
+
+    lines.push('');
+    lines.push('DEPLOYMENT TRACKER - DEPLOYMENT ANALYTICS');
+    lines.push('Deployment Date,Bugs Deployed,Tasks Deployed,Total (Bugs + Tasks)');
+    data.deploymentSummary.dates.forEach(row => {
+      lines.push(`"${row.date}",${row.bugsDeployed},${row.tasksDeployed},${row.total}`);
+    });
+    lines.push(`"Total",${data.deploymentSummary.total.bugsDeployed},${data.deploymentSummary.total.tasksDeployed},${data.deploymentSummary.total.total}`);
+
+    lines.push('');
+    lines.push('AGEING & CATEGORY TABLES (Dev pending bugs only)');
+    lines.push(`"As-of date:",${asOfDate}`);
+    lines.push('Developer,0-7 Days,8-15 Days,16-30 Days,31-45 Days,46-60 Days,60+ Days,Total');
+    data.devAgeingMatrix.rows.forEach(r => {
+      lines.push(`"${r.developer}",${r.d0_7},${r.d8_15},${r.d16_30},${r.d31_45},${r.d46_60},${r.d60_plus},${r.total}`);
+    });
+
+    const csvContent = lines.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Sheet2_Dashboard_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  if (isLoading || !data) {
     return (
-      <div className="bg-white border border-slate-200 rounded-xl p-12 text-center shadow-2xs">
-        <Loader2 className="w-8 h-8 animate-spin text-sky-600 mx-auto mb-3" />
-        <h3 className="font-bold text-slate-800 text-sm">Computing Executive Dashboard Metrics...</h3>
-        <p className="text-xs text-slate-400 mt-1">Aggregating live defect status and quality formulas directly from database</p>
+      <div className="bg-white border border-slate-300 rounded p-12 text-center shadow-xs">
+        <Loader2 className="w-8 h-8 animate-spin text-[#1b365d] mx-auto mb-3" />
+        <h3 className="font-bold text-slate-800 text-sm">Rendering Exact Sheet 2 Dashboard...</h3>
+        <p className="text-xs text-slate-500 mt-1">Replicating Excel formulas, cell grids, and exact color palettes</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Header Banner */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs flex items-center justify-between flex-wrap gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-sky-600 text-white flex items-center justify-center font-bold text-lg shadow-2xs">
-            <BarChart3 className="w-5 h-5" />
+    <div className="space-y-4 font-sans text-xs select-text">
+      {/* Excel Sheet Action Toolbar */}
+      <div className="bg-white border border-slate-300 px-4 py-2.5 rounded shadow-2xs flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#1b365d] text-white font-bold text-xs">
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              Sheet 2: Dashboard
+            </span>
+            <span className="font-mono text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+              Excel Grid: A1:H110
+            </span>
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg font-bold font-display text-slate-900">
-                Sheet 2: Executive Development &amp; QA Quality Dashboard
-              </h2>
-              <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                Computed Live
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 font-sans mt-0.5">
-              Exact formula translation from Sheet 2 of the Excel Tracker • Real-time KPIs, Reopen Analysis &amp; Module Health
-            </p>
+
+          {/* View Mode Switcher */}
+          <div className="inline-flex items-center rounded border border-slate-300 p-0.5 bg-slate-100">
+            <button
+              type="button"
+              onClick={() => setViewMode('excel')}
+              className={`px-2.5 py-1 text-[11px] font-semibold rounded transition-colors ${
+                viewMode === 'excel'
+                  ? 'bg-white text-[#1b365d] shadow-2xs font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Excel Exact Baseline
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('live')}
+              className={`px-2.5 py-1 text-[11px] font-semibold rounded transition-colors ${
+                viewMode === 'live'
+                  ? 'bg-white text-[#1b365d] shadow-2xs font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Live Synced Azure DB
+            </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded border border-slate-300 font-semibold text-xs transition-colors"
+            title="Export exact CSV format matching Sheet 2"
+          >
+            <Download className="w-3.5 h-3.5 text-slate-700" />
+            <span>Export CSV</span>
+          </button>
+
           <button
             type="button"
             onClick={onDownloadExcel}
-            className="h-9 btn-secondary inline-flex items-center gap-1.5 px-3.5 text-xs font-semibold rounded-md shadow-2xs text-slate-700 hover:text-sky-700 hover:border-sky-300 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1b365d] hover:bg-[#152a4a] text-white rounded font-semibold text-xs transition-colors shadow-2xs"
+            title="Download full 27-sheet Excel workbook"
           >
-            <Download className="w-3.5 h-3.5 text-sky-600" />
-            <span>Download Full Excel (.xlsx)</span>
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <span>Download Full .xlsx</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 rounded border border-slate-300 font-semibold text-xs transition-colors"
+            title="Print sheet"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            <span>Print</span>
           </button>
         </div>
       </div>
 
-      {/* Top Metric KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Total & Fix Rate */}
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider">Fix Accuracy / Completion</span>
-            <Activity className="w-4 h-4 text-emerald-600" />
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900">{fixRate}%</span>
-            <span className="text-xs text-slate-500">({closedCount} of {totalBugs} bugs closed)</span>
-          </div>
-          <div className="w-full bg-slate-100 rounded-full h-2 mt-3 overflow-hidden">
-            <div className="bg-emerald-500 h-2 rounded-full transition-all duration-500" style={{ width: `${Math.min(100, fixRate)}%` }} />
-          </div>
-        </div>
+      {/* Main Spreadsheet Grid Container */}
+      <div className="bg-white border border-slate-300 shadow-xs overflow-x-auto p-4 space-y-6">
 
-        {/* Card 2: Reopen Rate % */}
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider">Reopen Rate</span>
-            <RotateCcw className="w-4 h-4 text-amber-600" />
+        {/* =========================================================================
+            SECTION 1: PROJECT DEVELOPMENT & QA QUALITY DASHBOARD
+            ========================================================================= */}
+        <div>
+          {/* Banner 1 (Row 1) */}
+          <div className="bg-[#1b365d] text-white py-2 px-4 text-center font-bold tracking-wider text-sm sm:text-base uppercase border border-[#1b365d]">
+            PROJECT DEVELOPMENT &amp; QA QUALITY DASHBOARD
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className={`text-2xl sm:text-3xl font-extrabold font-display ${reopenRate > 8 ? 'text-rose-700' : reopenRate > 4 ? 'text-amber-700' : 'text-emerald-700'}`}>
-              {reopenRate}%
-            </span>
-            <span className="text-xs text-slate-500">({summary?.reopen_count ?? 0} reworked)</span>
-          </div>
-          <p className="text-[11px] text-slate-400 mt-2 font-medium">
-            Formula: <code>SUM(Reopens) / Total Bugs</code> (Target &lt; 5%)
-          </p>
-        </div>
 
-        {/* Card 3: UI vs Functional Ratio */}
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider">Defect Classification</span>
-            <Boxes className="w-4 h-4 text-sky-600" />
-          </div>
-          <div className="flex items-baseline gap-3">
-            <div>
-              <span className="text-xl font-bold font-display text-sky-700">{uiPercent}%</span>
-              <span className="text-[10px] text-slate-500 block uppercase font-medium">UI Bugs</span>
+          {/* Row 3 to 12: Project KPI & Quality KPI Tables */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-3">
+            {/* Left Table: Project KPI (Cols A, B, C) */}
+            <div className="border border-slate-300 bg-white">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[#2b5b84] text-white font-bold text-xs uppercase">
+                    <th className="py-1.5 px-3 border border-[#2b5b84] w-44">Project KPI</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84] text-right w-24">Value</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84]">Meaning</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.projectKpis.map((kpi, idx) => {
+                    const displayVal = viewMode === 'live' && kpi.liveValue !== undefined ? kpi.liveValue : kpi.value;
+                    return (
+                      <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="py-1.5 px-3 border border-slate-300 bg-[#d9e1f2] font-semibold text-slate-900">
+                          {kpi.label}
+                        </td>
+                        <td className="py-1.5 px-3 border border-slate-300 font-mono font-bold text-right text-slate-900 relative">
+                          {kpi.isProgress ? (
+                            <div className="relative w-full h-full flex items-center justify-end">
+                              <div 
+                                className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-fuchsia-600 to-purple-600 opacity-60 rounded-xs"
+                                style={{ width: `${kpi.progressPercent}%` }}
+                              />
+                              <span className="relative z-10 font-bold">{displayVal}</span>
+                            </div>
+                          ) : (
+                            displayVal
+                          )}
+                        </td>
+                        <td className="py-1.5 px-3 border border-slate-300 text-slate-600 text-[11px]">
+                          {kpi.meaning}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-            <div className="h-6 w-px bg-slate-200" />
-            <div>
-              <span className="text-xl font-bold font-display text-indigo-700">{functionalPercent}%</span>
-              <span className="text-[10px] text-slate-500 block uppercase font-medium">Functional</span>
+
+            {/* Right Table: Quality KPI (Cols E, F, G) */}
+            <div className="border border-slate-300 bg-white">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[#2b5b84] text-white font-bold text-xs uppercase">
+                    <th className="py-1.5 px-3 border border-[#2b5b84] w-52">Quality KPI</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84] text-right w-24">Value</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84]">Meaning</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.qualityKpis.map((kpi, idx) => {
+                    const displayVal = viewMode === 'live' && kpi.liveValue !== undefined ? kpi.liveValue : kpi.value;
+                    return (
+                      <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="py-1.5 px-3 border border-slate-300 bg-[#d9e1f2] font-semibold text-slate-900">
+                          {kpi.label}
+                        </td>
+                        <td className="py-1.5 px-3 border border-slate-300 font-mono font-bold text-right text-slate-900">
+                          {displayVal}
+                        </td>
+                        <td className="py-1.5 px-3 border border-slate-300 text-slate-600 text-[11px]">
+                          {kpi.meaning}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
-          <div className="w-full bg-slate-100 rounded-full h-2 mt-2.5 flex overflow-hidden">
-            <div className="bg-sky-500 h-2 transition-all" style={{ width: `${uiPercent}%` }} title={`UI: ${uiPercent}%`} />
-            <div className="bg-indigo-500 h-2 transition-all" style={{ width: `${functionalPercent}%` }} title={`Functional: ${functionalPercent}%`} />
-          </div>
-        </div>
 
-        {/* Card 4: Critical & High Severity */}
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider">Critical &amp; High Priority</span>
-            <AlertTriangle className="w-4 h-4 text-rose-600" />
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-extrabold font-display text-rose-700">
-              {criticalCount}
-            </span>
-            <span className="text-xs text-slate-500">
-              ({totalBugs > 0 ? ((criticalCount / totalBugs) * 100).toFixed(1) : 0}% of all defects)
-            </span>
-          </div>
-          <div className="flex items-center gap-2 mt-2">
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-50 text-rose-800 border border-rose-200">
-              P1 Critical: {summary?.priority_breakdown?.['Priority 1'] || 0}
-            </span>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-orange-50 text-orange-800 border border-orange-200">
-              P2 High: {summary?.priority_breakdown?.['Priority 2'] || 0}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* State & Severity Breakdown Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* State Breakdown Card */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs">
-          <h3 className="text-sm font-bold font-display text-slate-900 mb-4 flex items-center justify-between">
-            <span>Defect Status Lifecycle Distribution</span>
-            <span className="text-xs font-normal text-slate-500">Total: {totalBugs}</span>
-          </h3>
-
-          <div className="space-y-3">
-            {[
-              { label: 'New / Proposed', count: openCount, color: 'bg-sky-500', text: 'text-sky-700', bg: 'bg-sky-50' },
-              { label: 'Active / Committed', count: activeCount, color: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50' },
-              { label: 'Resolved / Fixed', count: summary?.resolved_bugs || 0, color: 'bg-teal-500', text: 'text-teal-700', bg: 'bg-teal-50' },
-              { label: 'Closed / Verified (Done)', count: summary?.closed_bugs || 0, color: 'bg-emerald-500', text: 'text-emerald-700', bg: 'bg-emerald-50' },
-            ].map((item, idx) => {
-              const pct = totalBugs > 0 ? ((item.count / totalBugs) * 100).toFixed(1) : '0';
-              return (
-                <div key={idx} className="space-y-1">
-                  <div className="flex items-center justify-between text-xs font-medium">
-                    <span className="text-slate-700">{item.label}</span>
-                    <span className="font-mono text-slate-600 font-bold">{item.count} ({pct}%)</span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                    <div className={`${item.color} h-2 rounded-full transition-all duration-300`} style={{ width: `${pct}%` }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Severity Breakdown Card */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs">
-          <h3 className="text-sm font-bold font-display text-slate-900 mb-4 flex items-center justify-between">
-            <span>Defect Severity Spectrum</span>
-            <span className="text-xs font-normal text-slate-500">P1 to P4 Matrix</span>
-          </h3>
-
-          <div className="space-y-3">
-            {[
-              { label: '1 - Critical (Blocker)', count: summary?.severity_breakdown?.['1 - Critical'] || 0, color: 'bg-rose-600' },
-              { label: '2 - High', count: summary?.severity_breakdown?.['2 - High'] || 0, color: 'bg-orange-500' },
-              { label: '3 - Medium', count: summary?.severity_breakdown?.['3 - Medium'] || 0, color: 'bg-sky-500' },
-              { label: '4 - Low', count: summary?.severity_breakdown?.['4 - Low'] || 0, color: 'bg-slate-400' },
-            ].map((item, idx) => {
-              const pct = totalBugs > 0 ? ((item.count / totalBugs) * 100).toFixed(1) : '0';
-              return (
-                <div key={idx} className="space-y-1">
-                  <div className="flex items-center justify-between text-xs font-medium">
-                    <span className="text-slate-700">{item.label}</span>
-                    <span className="font-mono text-slate-600 font-bold">{item.count} ({pct}%)</span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                    <div className={`${item.color} h-2 rounded-full transition-all duration-300`} style={{ width: `${pct}%` }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Module-Wise Health & Defect Matrix */}
-      <div className="bg-white border border-slate-200 rounded-xl shadow-2xs overflow-hidden">
-        <div className="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between flex-wrap gap-2">
-          <div>
-            <h3 className="text-sm sm:text-base font-bold font-display text-slate-900">
-              Module-Wise Defect Matrix (HRMS Pages)
-            </h3>
-            <p className="text-xs text-slate-500">
-              Aggregated defect volume, open backlog, and critical bug density per application page
-            </p>
-          </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[10px]">
-                <th className="py-2.5 px-4">HRMS Module / Page</th>
-                <th className="py-2.5 px-3 text-center">Total Defects</th>
-                <th className="py-2.5 px-3 text-center">Open Backlog</th>
-                <th className="py-2.5 px-3 text-center">Active Work</th>
-                <th className="py-2.5 px-3 text-center">Resolved / Done</th>
-                <th className="py-2.5 px-3 text-center">Critical Severity</th>
-                <th className="py-2.5 px-4 text-center">Health Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {(summary?.page_breakdown || []).map((page, idx) => {
-                const isHighCrit = page.critical_bugs > 2;
-                const isBacklogHigh = page.open_bugs > 5;
-                const statusBadge = isHighCrit ? (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
-                    <ShieldAlert className="w-3 h-3 text-rose-600" /> High Critical
-                  </span>
-                ) : isBacklogHigh ? (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                    <AlertTriangle className="w-3 h-3 text-amber-600" /> Backlog Active
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Stable
-                  </span>
-                );
-
-                return (
-                  <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-2.5 px-4 font-semibold text-slate-900">
-                      <button
-                        type="button"
-                        onClick={() => onNavigateToSheet1WithFilter?.('page', page.page_name)}
-                        className="text-left font-semibold text-slate-900 hover:text-sky-700 hover:underline cursor-pointer transition-colors"
-                        title={`Filter Sheet 1 for ${page.page_name}`}
+          {/* Row 14 to 19: Bug Status & Severity Tables */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+            {/* Left: Bug Status (Cols A, B) */}
+            <div className="border border-slate-300 bg-white">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[#2b5b84] text-white font-bold text-xs uppercase">
+                    <th className="py-1.5 px-3 border border-[#2b5b84]">Bug Status</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84] text-right w-36">Count</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.bugStatus.map((row, idx) => {
+                    const countVal = viewMode === 'live' && row.liveCount !== undefined ? row.liveCount : row.count;
+                    const isTotal = row.isTotal || row.status === 'Total';
+                    return (
+                      <tr 
+                        key={idx} 
+                        className={`hover:bg-slate-50 transition-colors ${isTotal ? 'bg-slate-100 font-bold border-t-2 border-slate-400' : ''}`}
                       >
-                        {page.page_name}
-                      </button>
+                        <td className="py-1.5 px-3 border border-slate-300 text-slate-800">
+                          {row.status}
+                        </td>
+                        <td className="py-1.5 px-3 border border-slate-300 font-mono font-bold text-right text-slate-900">
+                          {countVal}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Right: Severity (Cols D, E) */}
+            <div className="border border-slate-300 bg-white">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[#2b5b84] text-white font-bold text-xs uppercase">
+                    <th className="py-1.5 px-3 border border-[#2b5b84]">Severity</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84] text-right w-36">Count</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.severity.map((row, idx) => {
+                    const countVal = viewMode === 'live' && row.liveCount !== undefined ? row.liveCount : row.count;
+                    return (
+                      <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                        <td className="py-1.5 px-3 border border-slate-300 text-slate-800">
+                          {row.severity}
+                        </td>
+                        <td className="py-1.5 px-3 border border-slate-300 font-mono font-bold text-right text-slate-900">
+                          {countVal}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Row 21 to 31: Developer Scorecard & Module Quality */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+            {/* Left: Developer Scorecard (Cols A, B, C, D) */}
+            <div className="border border-slate-300 bg-white">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[#2b5b84] text-white font-bold text-xs uppercase">
+                    <th className="py-1.5 px-3 border border-[#2b5b84]">Developer</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84] text-right">Dev Accuracy %</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84] text-right">Fix Accuracy %</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84] text-right">Final Score %</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.developerScorecard.map((dev, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-1.5 px-3 border border-slate-300 font-medium text-slate-900">
+                        <button
+                          type="button"
+                          onClick={() => onNavigateToSheet1WithFilter?.('developer', dev.developer)}
+                          className="hover:underline text-left cursor-pointer hover:text-sky-800"
+                          title={`View bugs assigned to ${dev.developer}`}
+                        >
+                          {dev.developer}
+                        </button>
+                      </td>
+                      <td className="py-1.5 px-3 border border-slate-300 font-mono text-right text-slate-800">
+                        {dev.devAccuracy}
+                      </td>
+                      <td className="py-1.5 px-3 border border-slate-300 font-mono text-right text-slate-800">
+                        {dev.fixAccuracy}
+                      </td>
+                      <td className="py-1.5 px-3 border border-slate-300 font-mono font-bold text-right text-slate-900">
+                        {dev.finalScore}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Right: Module Quality (Cols F, G, H) */}
+            <div className="border border-slate-300 bg-white">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[#2b5b84] text-white font-bold text-xs uppercase">
+                    <th className="py-1.5 px-3 border border-[#2b5b84]">Module</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84] text-right">Progress %</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84] text-right">Accuracy %</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.moduleQuality.map((mod, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-1.5 px-3 border border-slate-300 font-medium text-slate-900">
+                        <button
+                          type="button"
+                          onClick={() => onNavigateToSheet1WithFilter?.('page', mod.module)}
+                          className="hover:underline text-left cursor-pointer hover:text-sky-800"
+                          title={`View bugs in module ${mod.module}`}
+                        >
+                          {mod.module}
+                        </button>
+                      </td>
+                      <td className="py-1.5 px-3 border border-slate-300 font-mono text-right text-slate-800">
+                        {mod.progress}
+                      </td>
+                      <td className="py-1.5 px-3 border border-slate-300 font-mono font-bold text-right text-slate-900">
+                        {mod.accuracy}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* =========================================================================
+            SECTION 2: DEPLOYMENT TRACKER — DEPLOYMENT ANALYTICS (Rows 40-76)
+            ========================================================================= */}
+        <div className="pt-4 border-t-2 border-slate-300">
+          {/* Banner 2 (Row 40) */}
+          <div className="bg-[#1b365d] text-white py-2 px-4 text-center font-bold tracking-wider text-sm sm:text-base uppercase border border-[#1b365d]">
+            DEPLOYMENT TRACKER — DEPLOYMENT ANALYTICS
+          </div>
+
+          {/* Subtitle / How to read (Row 41) */}
+          <div className="bg-slate-50 border-x border-b border-slate-300 px-4 py-2.5 text-[11px] text-slate-600 italic">
+            <span className="font-bold uppercase tracking-wider not-italic text-slate-700">HOW TO READ THIS: </span>
+            each row is one real deployment date . &quot;Bugs Deployed&quot; / &quot;Tasks Deployed&quot; = how many went out that day. 
+            The QA Status chart shows, of all bugs deployed so far, how many are Closed (verified fixed), Reopened (failed retest), or still Pending QA (not yet retested).
+          </div>
+
+          {/* Tables layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-4">
+            {/* Table 1: Deployment Summary — By Date (Cols A-D, spans 2 cols on lg) */}
+            <div className="lg:col-span-2 border border-slate-300 bg-white">
+              <div className="bg-slate-100 px-3 py-1.5 font-bold text-xs text-slate-800 border-b border-slate-300">
+                Deployment Summary — By Date
+              </div>
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[#2b5b84] text-white font-bold text-xs uppercase">
+                    <th className="py-1.5 px-3 border border-[#2b5b84]">Deployment Date</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84] text-right">Bugs Deployed</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84] text-right">Tasks Deployed</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84] text-right">Total (Bugs + Tasks)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.deploymentSummary.dates.map((row, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-1 px-3 border border-slate-300 font-mono text-slate-800">
+                        {row.date}
+                      </td>
+                      <td className="py-1 px-3 border border-slate-300 font-mono text-right text-slate-800">
+                        {row.bugsDeployed}
+                      </td>
+                      <td className="py-1 px-3 border border-slate-300 font-mono text-right text-slate-800">
+                        {row.tasksDeployed}
+                      </td>
+                      <td className="py-1 px-3 border border-slate-300 font-mono font-bold text-right text-slate-900">
+                        {row.total}
+                      </td>
+                    </tr>
+                  ))}
+                  {/* Total Row (Row 62) */}
+                  <tr className="bg-[#e7e6e6] font-bold border-t-2 border-slate-400">
+                    <td className="py-1.5 px-3 border border-slate-300 text-slate-900">
+                      Total
                     </td>
-                    <td className="py-2.5 px-3 text-center font-mono font-bold text-slate-800">
-                      {page.total_bugs}
+                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-right text-slate-900">
+                      {data.deploymentSummary.total.bugsDeployed}
                     </td>
-                    <td className="py-2.5 px-3 text-center font-mono text-sky-700 font-semibold">
-                      {page.open_bugs}
+                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-right text-slate-900">
+                      {data.deploymentSummary.total.tasksDeployed}
                     </td>
-                    <td className="py-2.5 px-3 text-center font-mono text-amber-700 font-semibold">
-                      {page.active_bugs}
-                    </td>
-                    <td className="py-2.5 px-3 text-center font-mono text-emerald-700 font-semibold">
-                      {page.closed_bugs}
-                    </td>
-                    <td className="py-2.5 px-3 text-center font-mono">
-                      {page.critical_bugs > 0 ? (
-                        <span className="font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
-                          {page.critical_bugs}
-                        </span>
-                      ) : (
-                        <span className="text-slate-400">0</span>
-                      )}
-                    </td>
-                    <td className="py-2.5 px-4 text-center">
-                      {statusBadge}
+                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-right text-slate-900">
+                      {data.deploymentSummary.total.total}
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Right Column: QA Status & Priority Tables */}
+            <div className="space-y-4">
+              {/* Table 2: Bug QA Status (All Deployed Bugs) (Row 64) */}
+              <div className="border border-slate-300 bg-white">
+                <div className="bg-slate-100 px-3 py-1.5 font-bold text-xs text-slate-800 border-b border-slate-300">
+                  Bug QA Status (All Deployed Bugs)
+                </div>
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-[#2b5b84] text-white font-bold text-xs uppercase">
+                      <th className="py-1.5 px-3 border border-[#2b5b84]">QA Status</th>
+                      <th className="py-1.5 px-3 border border-[#2b5b84] text-right">Count</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.bugQaStatus.map((row, idx) => (
+                      <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                        <td className="py-1.5 px-3 border border-slate-300 font-medium text-slate-800">
+                          {row.status}
+                        </td>
+                        <td className="py-1.5 px-3 border border-slate-300 font-mono font-bold text-right text-slate-900">
+                          {row.count}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Table 3: Bug Priority (Deployed Bugs Only) (Row 70) */}
+              <div className="border border-slate-300 bg-white">
+                <div className="bg-slate-100 px-3 py-1.5 font-bold text-xs text-slate-800 border-b border-slate-300">
+                  Bug Priority (Deployed Bugs Only)
+                </div>
+                <div className="bg-slate-50 px-3 py-1 text-[10px] text-slate-500 italic border-b border-slate-200">
+                  P1 = most urgent, P4 = least. Deployed bugs only, not the whole Bug Tracker backlog.
+                </div>
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-[#2b5b84] text-white font-bold text-xs uppercase">
+                      <th className="py-1.5 px-3 border border-[#2b5b84]">Priority</th>
+                      <th className="py-1.5 px-3 border border-[#2b5b84] text-right">Count</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.bugPriority.map((row, idx) => (
+                      <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                        <td className="py-1.5 px-3 border border-slate-300 font-medium text-slate-800">
+                          {row.priority}
+                        </td>
+                        <td className="py-1.5 px-3 border border-slate-300 font-mono font-bold text-right text-slate-900">
+                          {row.count}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* =========================================================================
+            SECTION 3: AGEING & CATEGORY TABLES (Rows 77-110)
+            ========================================================================= */}
+        <div className="pt-4 border-t-2 border-slate-300">
+          {/* Banner 3 (Row 77) */}
+          <div className="bg-[#1b365d] text-white py-2 px-4 text-center font-bold tracking-wider text-sm sm:text-base uppercase border border-[#1b365d]">
+            AGEING &amp; CATEGORY TABLES (Dev pending bugs only: Azure State = New / Approved / Committed)
+          </div>
+
+          {/* Subtitle (Row 78) */}
+          <div className="bg-slate-50 border-x border-b border-slate-300 px-4 py-2 text-[11px] text-slate-600 italic flex items-center justify-between flex-wrap gap-2">
+            <span>
+              Ageing is measured from &apos;Date Raised&apos; on the Bug Tracker to the as of date below. Type a date in B75, or enter =TODAY() to keep it always current.
+            </span>
+            <div className="inline-flex items-center gap-1.5 not-italic">
+              <span className="font-bold text-slate-700">As-of date:</span>
+              <input 
+                type="text" 
+                value={asOfDate}
+                onChange={(e) => setAsOfDate(e.target.value)}
+                className="bg-[#fff2cc] border border-amber-300 px-2.5 py-0.5 rounded font-mono font-bold text-slate-900 text-xs text-center w-28 focus:outline-none focus:ring-1 focus:ring-amber-500"
+              />
+            </div>
+          </div>
+
+          {/* Table 1: Development Team Ageing Matrix (Dev Pending Bugs Only) (Row 82) */}
+          <div className="border border-slate-300 bg-white mt-4">
+            <div className="bg-slate-100 px-3 py-1.5 font-bold text-xs text-slate-800 border-b border-slate-300">
+              Development Team Ageing Matrix (Dev Pending Bugs Only)
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[#2b5b84] text-white font-bold text-xs uppercase">
+                    <th className="py-1.5 px-3 border border-[#2b5b84]">Developer</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84] text-center">0-7 Days</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84] text-center">8-15 Days</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84] text-center">16-30 Days</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84] text-center">31-45 Days</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84] text-center">46-60 Days</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84] text-center">60+ Days</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84] text-center bg-[#244b6e]">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.devAgeingMatrix.rows.map((row, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-1.5 px-3 border border-slate-300 font-medium text-slate-900">
+                        {row.developer}
+                      </td>
+                      <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-800">
+                        {row.d0_7}
+                      </td>
+                      <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-800">
+                        {row.d8_15}
+                      </td>
+                      <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-800">
+                        {row.d16_30}
+                      </td>
+                      <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-800">
+                        {row.d31_45}
+                      </td>
+                      <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-800">
+                        {row.d46_60}
+                      </td>
+                      <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-800">
+                        {row.d60_plus}
+                      </td>
+                      <td className="py-1.5 px-3 border border-slate-300 font-mono font-bold text-center text-slate-900 bg-[#fff2cc]">
+                        {row.total}
+                      </td>
+                    </tr>
+                  ))}
+                  {/* Total Row (Row 91) */}
+                  <tr className="bg-slate-100 font-bold border-t-2 border-slate-400">
+                    <td className="py-1.5 px-3 border border-slate-300 text-slate-900">
+                      Total
+                    </td>
+                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-900">
+                      {data.devAgeingMatrix.total.d0_7}
+                    </td>
+                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-900">
+                      {data.devAgeingMatrix.total.d8_15}
+                    </td>
+                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-900">
+                      {data.devAgeingMatrix.total.d16_30}
+                    </td>
+                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-900">
+                      {data.devAgeingMatrix.total.d31_45}
+                    </td>
+                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-900">
+                      {data.devAgeingMatrix.total.d46_60}
+                    </td>
+                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-900">
+                      {data.devAgeingMatrix.total.d60_plus}
+                    </td>
+                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-900 bg-[#fff2cc]">
+                      {data.devAgeingMatrix.total.total}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Table 2: Module Ageing Matrix (Dev Pending Bugs Only) (Row 94) */}
+          <div className="border border-slate-300 bg-white mt-4">
+            <div className="bg-slate-100 px-3 py-1.5 font-bold text-xs text-slate-800 border-b border-slate-300">
+              Module Ageing Matrix (Dev Pending Bugs Only)
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[#3b703e] text-white font-bold text-xs uppercase">
+                    <th className="py-1.5 px-3 border border-[#3b703e]">Module</th>
+                    <th className="py-1.5 px-3 border border-[#3b703e] text-center">0-7 Days</th>
+                    <th className="py-1.5 px-3 border border-[#3b703e] text-center">8-15 Days</th>
+                    <th className="py-1.5 px-3 border border-[#3b703e] text-center">16-30 Days</th>
+                    <th className="py-1.5 px-3 border border-[#3b703e] text-center">31-45 Days</th>
+                    <th className="py-1.5 px-3 border border-[#3b703e] text-center">46-60 Days</th>
+                    <th className="py-1.5 px-3 border border-[#3b703e] text-center">60+ Days</th>
+                    <th className="py-1.5 px-3 border border-[#3b703e] text-center bg-[#2f5932]">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.moduleAgeingMatrix.rows.map((row, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-1.5 px-3 border border-slate-300 font-medium text-slate-900">
+                        {row.module}
+                      </td>
+                      <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-800">
+                        {row.d0_7}
+                      </td>
+                      <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-800">
+                        {row.d8_15}
+                      </td>
+                      <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-800">
+                        {row.d16_30}
+                      </td>
+                      <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-800">
+                        {row.d31_45}
+                      </td>
+                      <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-800">
+                        {row.d46_60}
+                      </td>
+                      <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-800">
+                        {row.d60_plus}
+                      </td>
+                      <td className="py-1.5 px-3 border border-slate-300 font-mono font-bold text-center text-slate-900">
+                        {row.total}
+                      </td>
+                    </tr>
+                  ))}
+                  {/* Total Row (Row 101) */}
+                  <tr className="bg-slate-100 font-bold border-t-2 border-slate-400">
+                    <td className="py-1.5 px-3 border border-slate-300 text-slate-900">
+                      Total
+                    </td>
+                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-900">
+                      {data.moduleAgeingMatrix.total.d0_7}
+                    </td>
+                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-900">
+                      {data.moduleAgeingMatrix.total.d8_15}
+                    </td>
+                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-900">
+                      {data.moduleAgeingMatrix.total.d16_30}
+                    </td>
+                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-900">
+                      {data.moduleAgeingMatrix.total.d31_45}
+                    </td>
+                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-900">
+                      {data.moduleAgeingMatrix.total.d46_60}
+                    </td>
+                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-900">
+                      {data.moduleAgeingMatrix.total.d60_plus}
+                    </td>
+                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-900">
+                      {data.moduleAgeingMatrix.total.total}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Table 3: Bugs Category (Dev Pending Bugs Only) (Row 103) */}
+          <div className="border border-slate-300 bg-white mt-4 max-w-xl">
+            <div className="bg-slate-100 px-3 py-1.5 font-bold text-xs text-slate-800 border-b border-slate-300">
+              Bugs Category (Dev Pending Bugs Only)
+            </div>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#2b5b84] text-white font-bold text-xs uppercase">
+                  <th className="py-1.5 px-3 border border-[#2b5b84]">Module</th>
+                  <th className="py-1.5 px-3 border border-[#2b5b84] text-center">UI Bugs</th>
+                  <th className="py-1.5 px-3 border border-[#2b5b84] text-center">Functional Bugs</th>
+                  <th className="py-1.5 px-3 border border-[#2b5b84] text-center">Total Bugs</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.bugsCategory.rows.map((row, idx) => (
+                  <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                    <td className="py-1.5 px-3 border border-slate-300 font-medium text-slate-900">
+                      {row.module}
+                    </td>
+                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-800">
+                      {row.uiBugs}
+                    </td>
+                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-800">
+                      {row.functionalBugs}
+                    </td>
+                    <td className="py-1.5 px-3 border border-slate-300 font-mono font-bold text-center text-slate-900">
+                      {row.totalBugs}
+                    </td>
+                  </tr>
+                ))}
+                {/* Total Row (Row 110) */}
+                <tr className="bg-slate-100 font-bold border-t-2 border-slate-400">
+                  <td className="py-1.5 px-3 border border-slate-300 text-slate-900">
+                    Total
+                  </td>
+                  <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-900">
+                    {data.bugsCategory.total.uiBugs}
+                  </td>
+                  <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-900">
+                    {data.bugsCategory.total.functionalBugs}
+                  </td>
+                  <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-900">
+                    {data.bugsCategory.total.totalBugs}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
       </div>
     </div>
   );

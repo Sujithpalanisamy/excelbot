@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { PageReportRequestSchema } from '../validators/schemas.js';
-import { buildReportSummary } from '../services/report-service.js';
+import { buildReportSummary, getDashboardExcelData } from '../services/report-service.js';
 import { getAllBugs } from '../database/index.js';
 import { excelService } from '../integrations/excel/excel-service.js';
 
@@ -10,6 +10,15 @@ reportsRouter.get('/summary', (req, res, next) => {
   try {
     const summary = buildReportSummary();
     res.json(summary);
+  } catch (err) {
+    next(err);
+  }
+});
+
+reportsRouter.get('/dashboard-excel', (req, res, next) => {
+  try {
+    const data = getDashboardExcelData();
+    res.json(data);
   } catch (err) {
     next(err);
   }

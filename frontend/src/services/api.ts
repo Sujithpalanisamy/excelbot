@@ -1,5 +1,5 @@
 import type { 
-  BugItem, SummaryDetail, ReportSummary, 
+  BugItem, SummaryDetail, ReportSummary, DashboardExcelData,
   SettingsStatusResponse, SettingsUpdateRequest, ChatResponse 
 } from '../types';
 
@@ -121,6 +121,12 @@ export const api = {
   async getReportSummary(): Promise<ReportSummary> {
     const res = await fetch(`${API_BASE}/reports/summary`);
     if (!res.ok) throw new Error('Failed to get report summary');
+    return res.json();
+  },
+
+  async getDashboardExcelData(): Promise<DashboardExcelData> {
+    const res = await fetch(`${API_BASE}/reports/dashboard-excel`);
+    if (!res.ok) throw new Error('Failed to get dashboard excel data');
     return res.json();
   },
 
