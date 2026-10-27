@@ -624,3 +624,305 @@ export function getBugTrackerData() {
   });
 }
 
+export function getReopenAnalysisData() {
+  const bugs = getAllBugs();
+  const developers = [
+    'Raghupavan',
+    'KiranKumar N',
+    'Karthik R',
+    'Abhishek K',
+    'Adithya Kislay',
+    'Manikandan',
+    'Vamsi chowdary',
+    'Boopathi Senthi'
+  ];
+
+  const devMap: Record<string, { assigned: number; closed: number; reopened: number; criticalReopens: number }> = {};
+  for (const d of developers) {
+    devMap[d] = { assigned: 0, closed: 0, reopened: 0, criticalReopens: 0 };
+  }
+
+  for (const b of bugs) {
+    const rawDev = cleanAssigneeName(b.assigned_to || '');
+    const matchedDev = developers.find(d => d.toLowerCase().replace(/\s+/g, '') === rawDev.toLowerCase().replace(/\s+/g, ''));
+    if (!matchedDev) continue;
+
+    devMap[matchedDev].assigned++;
+    const isDone = ['done', 'closed', 'resolved'].includes((b.state || '').toLowerCase());
+    if (isDone) devMap[matchedDev].closed++;
+
+    const isReopened = (b.tags || '').toLowerCase().includes('reopen');
+    if (isReopened) {
+      devMap[matchedDev].reopened++;
+      const sev = String(b.severity || '').toLowerCase();
+      if (sev.includes('1') || sev.includes('critical') || sev.includes('2') || sev.includes('high')) {
+        devMap[matchedDev].criticalReopens++;
+      }
+    }
+  }
+
+  const rows = developers.map(d => {
+    const s = devMap[d] || { assigned: 0, closed: 0, reopened: 0, criticalReopens: 0 };
+    const reworkPct = s.assigned > 0 ? Number(((s.reopened / s.assigned) * 100).toFixed(1)) : 0;
+    const fixAccuracyPct = s.assigned > 0 ? Number(Math.max(0, 100 - reworkPct).toFixed(1)) : 0;
+    
+    let actionReq = 'Fix Quality High (Stable)';
+    if (s.assigned === 0) actionReq = 'No Bugs Assigned';
+    else if (fixAccuracyPct < 85) actionReq = 'Code Review Required (High Rework)';
+    else if (fixAccuracyPct < 95) actionReq = 'Monitor (Moderate Rework)';
+
+    return {
+      developer: d,
+      bugsAssigned: s.assigned,
+      closedBugs: s.closed,
+      reopenedCount: s.reopened,
+      reworkPct: reworkPct.toFixed(1) + '%',
+      criticalReopens: s.criticalReopens,
+      fixAccuracyPct: fixAccuracyPct.toFixed(1) + '%',
+      actionRequired: actionReq
+    };
+  });
+
+  const totalAssigned = rows.reduce((acc, r) => acc + r.bugsAssigned, 0);
+  const totalClosed = rows.reduce((acc, r) => acc + r.closedBugs, 0);
+  const totalReopened = rows.reduce((acc, r) => acc + r.reopenedCount, 0);
+  const totalCritReopens = rows.reduce((acc, r) => acc + r.criticalReopens, 0);
+  const totalReworkPct = totalAssigned > 0 ? ((totalReopened / totalAssigned) * 100).toFixed(1) + '%' : '0.0%';
+  const totalFixAccuracy = totalAssigned > 0 ? Math.max(0, 100 - (totalReopened / totalAssigned) * 100).toFixed(1) + '%' : '100.0%';
+
+  return {
+    totalAssigned,
+    totalClosed,
+    totalReopened,
+    totalCritReopens,
+    totalReworkPct,
+    totalFixAccuracy,
+    rows
+  };
+}
+
+export function getModuleQualityData() {
+  const bugs = getAllBugs();
+  const modules = [
+    { name: 'EDM', pages: 108, completed: 56, avgProgress: '51.9%' },
+    { name: 'Shift Roster', pages: 24, completed: 21, avgProgress: '88.9%' },
+    { name: 'ESS', pages: 48, completed: 40, avgProgress: '83.3%' },
+    { name: 'Leave', pages: 80, completed: 77, avgProgress: '96.7%' },
+    { name: 'Attendance', pages: 12, completed: 6, avgProgress: '50.0%' }
+  ];
+
+  const modCounts: Record<string, { total: number; critical: number; high: number; medium: number; low: number; internal: number }> = {};
+  for (const m of modules) {
+    modCounts[m.name] = { total: 0, critical: 0, high: 0, medium: 0, low: 0, internal: 0 };
+  }
+
+  for (const b of bugs) {
+    const mod = detectModuleFromName(b.title || '', b.page_name);
+    const targetName = modules.find(m => m.name.toLowerCase() === mod.toLowerCase())?.name || 'EDM';
+    if (!modCounts[targetName]) continue;
+
+    modCounts[targetName].total++;
+    const sev = String(b.severity || '').toLowerCase();
+    if (sev.includes('1') || sev.includes('critical')) modCounts[targetName].critical++;
+    else if (sev.includes('2') || sev.includes('high')) modCounts[targetName].high++;
+    else if (sev.includes('4') || sev.includes('low')) modCounts[targetName].low++;
+    else modCounts[targetName].medium++;
+
+    const tags = (b.tags || '').toLowerCase();
+    if (tags.includes('internal')) modCounts[targetName].internal++;
+  }
+
+  const rows = modules.map(m => {
+    const c = modCounts[m.name] || { total: 0, critical: 0, high: 0, medium: 0, low: 0, internal: 0 };
+    // Formula: MAX(0, MIN(1, 1 - ((Crit*10 + High*6 + Med*3 + Low) / (Pages*5)) / 100))
+    const weightedPenalty = (c.critical * 10 + c.high * 6 + c.medium * 3 + c.low) / Math.max(1, m.pages * 5);
+    const accuracy = Math.max(0, Math.min(100, 100 - weightedPenalty * 10));
+
+    return {
+      module: m.name,
+      pages: m.pages,
+      completedPages: m.completed,
+      averageProgress: m.avgProgress,
+      bugs: c.total,
+      critical: c.critical,
+      high: c.high,
+      medium: c.medium,
+      low: c.low,
+      internalBugs: c.internal,
+      moduleAccuracy: accuracy.toFixed(1) + '%'
+    };
+  });
+
+  const totalPages = rows.reduce((acc, r) => acc + r.pages, 0);
+  const totalCompleted = rows.reduce((acc, r) => acc + r.completedPages, 0);
+  const totalBugs = rows.reduce((acc, r) => acc + r.bugs, 0);
+  const totalCritical = rows.reduce((acc, r) => acc + r.critical, 0);
+  const totalHigh = rows.reduce((acc, r) => acc + r.high, 0);
+  const totalMedium = rows.reduce((acc, r) => acc + r.medium, 0);
+  const totalLow = rows.reduce((acc, r) => acc + r.low, 0);
+  const totalInternal = rows.reduce((acc, r) => acc + r.internalBugs, 0);
+  const avgAccuracy = (rows.reduce((acc, r) => acc + parseFloat(r.moduleAccuracy), 0) / (rows.length || 1)).toFixed(1) + '%';
+
+  return {
+    rows,
+    total: {
+      pages: totalPages,
+      completedPages: totalCompleted,
+      averageProgress: ((totalCompleted / totalPages) * 100).toFixed(1) + '%',
+      bugs: totalBugs,
+      critical: totalCritical,
+      high: totalHigh,
+      medium: totalMedium,
+      low: totalLow,
+      internalBugs: totalInternal,
+      moduleAccuracy: avgAccuracy
+    }
+  };
+}
+
+export function getBugAgingData() {
+  const bugs = getAllBugs();
+  const bucketCounts = {
+    '0-7 Days': 0,
+    '8-15 Days': 0,
+    '16-30 Days': 0,
+    '31-45 Days': 0,
+    '46-60 Days': 0,
+    '60+ Days': 0
+  };
+
+  const items = bugs.map(b => {
+    const created = b.created_date ? new Date(b.created_date).getTime() : Date.now();
+    const closed = b.closed_date ? new Date(b.closed_date).getTime() : null;
+    const isDone = ['done', 'closed', 'resolved'].includes((b.state || '').toLowerCase());
+    const daysOpen = closed 
+      ? Math.max(0, Math.floor((closed - created) / (1000 * 60 * 60 * 24)))
+      : Math.max(0, Math.floor((Date.now() - created) / (1000 * 60 * 60 * 24)));
+
+    let ageBucket: keyof typeof bucketCounts = '60+ Days';
+    if (daysOpen <= 7) ageBucket = '0-7 Days';
+    else if (daysOpen <= 15) ageBucket = '8-15 Days';
+    else if (daysOpen <= 30) ageBucket = '16-30 Days';
+    else if (daysOpen <= 45) ageBucket = '31-45 Days';
+    else if (daysOpen <= 60) ageBucket = '46-60 Days';
+
+    bucketCounts[ageBucket]++;
+
+    const cleanDev = cleanAssigneeName(b.assigned_to || '');
+    return {
+      bug_id: b.id,
+      parent_bug_id: null,
+      module: detectModuleFromName(b.title || '', b.page_name),
+      page_name: b.page_name || 'General',
+      original_developer: cleanDev,
+      fix_developer: cleanDev,
+      severity: b.severity || 'Medium',
+      date_raised: b.created_date ? b.created_date.slice(0, 10) : '2026-07-14',
+      status: b.state || 'Done',
+      days_open: daysOpen,
+      aging_bucket: ageBucket
+    };
+  });
+
+  // sort descending by days_open
+  items.sort((a, b) => b.days_open - a.days_open);
+
+  return {
+    totalBugs: bugs.length,
+    bucketCounts,
+    items
+  };
+}
+
+export function getModuleUiVsFunctionalData() {
+  const bugs = getAllBugs();
+  const modules = ['EDM', 'Shift Roster', 'ESS', 'Leave', 'Attendance'];
+
+  const stats: Record<string, { uiTotal: number; functionalTotal: number; uiPending: number; functionalPending: number; uiClosed: number; functionalClosed: number }> = {};
+  for (const m of modules) {
+    stats[m] = { uiTotal: 0, functionalTotal: 0, uiPending: 0, functionalPending: 0, uiClosed: 0, functionalClosed: 0 };
+  }
+
+  for (const b of bugs) {
+    const mod = detectModuleFromName(b.title || '', b.page_name);
+    const targetName = modules.find(m => m.toLowerCase() === mod.toLowerCase()) || 'EDM';
+
+    const isUI = (b.tags || '').toLowerCase().includes('ui') || (b.title || '').toLowerCase().includes('ui');
+    const isClosed = ['done', 'closed', 'resolved'].includes((b.state || '').toLowerCase());
+    const isPending = !isClosed;
+
+    if (isUI) {
+      stats[targetName].uiTotal++;
+      if (isPending) stats[targetName].uiPending++;
+      else stats[targetName].uiClosed++;
+    } else {
+      stats[targetName].functionalTotal++;
+      if (isPending) stats[targetName].functionalPending++;
+      else stats[targetName].functionalClosed++;
+    }
+  }
+
+  const rows = modules.map(m => {
+    const s = stats[m] || { uiTotal: 0, functionalTotal: 0, uiPending: 0, functionalPending: 0, uiClosed: 0, functionalClosed: 0 };
+    const allBugs = s.uiTotal + s.functionalTotal;
+    const pendingTotal = s.uiPending + s.functionalPending;
+    const closedTotal = s.uiClosed + s.functionalClosed;
+    const uiPct = allBugs > 0 ? ((s.uiTotal / allBugs) * 100).toFixed(1) + '%' : '0.0%';
+
+    return {
+      module: m,
+      uiTotal: s.uiTotal,
+      functionalTotal: s.functionalTotal,
+      allBugs: allBugs,
+      uiPending: s.uiPending,
+      functionalPending: s.functionalPending,
+      pendingTotal: pendingTotal,
+      uiClosed: s.uiClosed,
+      functionalClosed: s.functionalClosed,
+      closedTotal: closedTotal,
+      uiPctOfModule: uiPct
+    };
+  });
+
+  const totalUi = rows.reduce((acc, r) => acc + r.uiTotal, 0);
+  const totalFunc = rows.reduce((acc, r) => acc + r.functionalTotal, 0);
+  const totalAll = totalUi + totalFunc;
+  const totalUiPending = rows.reduce((acc, r) => acc + r.uiPending, 0);
+  const totalFuncPending = rows.reduce((acc, r) => acc + r.functionalPending, 0);
+  const totalPending = totalUiPending + totalFuncPending;
+  const totalUiClosed = rows.reduce((acc, r) => acc + r.uiClosed, 0);
+  const totalFuncClosed = rows.reduce((acc, r) => acc + r.functionalClosed, 0);
+  const totalClosed = totalUiClosed + totalFuncClosed;
+  const totalUiPct = totalAll > 0 ? ((totalUi / totalAll) * 100).toFixed(1) + '%' : '0.0%';
+
+  return {
+    rows,
+    total: {
+      uiTotal: totalUi,
+      functionalTotal: totalFunc,
+      allBugs: totalAll,
+      uiPending: totalUiPending,
+      functionalPending: totalFuncPending,
+      pendingTotal: totalPending,
+      uiClosed: totalUiClosed,
+      functionalClosed: totalFuncClosed,
+      closedTotal: totalClosed,
+      uiPctOfModule: totalUiPct
+    }
+  };
+}
+
+export function getPageSummaryData() {
+  const summary = buildReportSummary();
+  return {
+    generated_at: summary.generated_at,
+    total_bugs: summary.total_bugs,
+    open_bugs: summary.open_bugs,
+    active_bugs: summary.active_bugs,
+    closed_bugs: summary.closed_bugs,
+    critical_bugs: summary.critical_severity_bugs,
+    high_priority_bugs: summary.high_priority_bugs,
+    rows: summary.page_breakdown
+  };
+}
+

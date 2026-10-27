@@ -92,8 +92,13 @@ export const SheetTabs: React.FC<SheetTabsProps> = ({
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   Live Sync Active ({totalBugsCount} Bugs)
                 </span>
+              ) : activeSheet.status === 'active' ? (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  Live Interactive Sheet
+                </span>
               ) : (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-sky-50 text-sky-700 border border-sky-200">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
                   Queued in Roadmap
                 </span>
               )}
@@ -117,7 +122,7 @@ export const SheetTabs: React.FC<SheetTabsProps> = ({
           >
             {ALL_27_SHEETS.map((s) => (
               <option key={s.id} value={s.id}>
-                Sheet {s.id}: {s.name} {s.id === 1 ? '★ (Active)' : ''}
+                Sheet {s.id}: {s.name} {s.status === 'active' ? '★ (Live)' : ''}
               </option>
             ))}
           </select>
@@ -147,8 +152,8 @@ export const SheetTabs: React.FC<SheetTabsProps> = ({
                   {icon}
                 </span>
                 <span>{sheet.id}. {sheet.name}</span>
-                {sheet.id === 1 && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Active live data" />
+                {sheet.status === 'active' && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Interactive Sheet" />
                 )}
               </button>
             );

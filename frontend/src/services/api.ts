@@ -1,6 +1,7 @@
 import type { 
   BugItem, SummaryDetail, ReportSummary, DashboardExcelData,
   PendingWithDeveloperData, BugLifecycleData, AzureImportItem, BugTrackerItem,
+  ReopenAnalysisData, ModuleQualityData, BugAgingData, ModuleUiVsFunctionalData, PageSummaryData,
   SettingsStatusResponse, SettingsUpdateRequest, ChatResponse 
 } from '../types';
 
@@ -152,6 +153,36 @@ export const api = {
   async getBugTrackerData(): Promise<BugTrackerItem[]> {
     const res = await fetch(`${API_BASE}/reports/bug-tracker`);
     if (!res.ok) throw new Error('Failed to get bug tracker data');
+    return res.json();
+  },
+
+  async getReopenAnalysisData(): Promise<ReopenAnalysisData> {
+    const res = await fetch(`${API_BASE}/reports/reopen-analysis`);
+    if (!res.ok) throw new Error('Failed to get reopen analysis data');
+    return res.json();
+  },
+
+  async getModuleQualityData(): Promise<ModuleQualityData> {
+    const res = await fetch(`${API_BASE}/reports/module-quality`);
+    if (!res.ok) throw new Error('Failed to get module quality data');
+    return res.json();
+  },
+
+  async getBugAgingData(): Promise<BugAgingData> {
+    const res = await fetch(`${API_BASE}/reports/bug-aging`);
+    if (!res.ok) throw new Error('Failed to get bug aging data');
+    return res.json();
+  },
+
+  async getModuleUiVsFunctionalData(): Promise<ModuleUiVsFunctionalData> {
+    const res = await fetch(`${API_BASE}/reports/module-ui-vs-functional`);
+    if (!res.ok) throw new Error('Failed to get module UI vs functional data');
+    return res.json();
+  },
+
+  async getPageSummaryData(): Promise<PageSummaryData> {
+    const res = await fetch(`${API_BASE}/reports/page-summary`);
+    if (!res.ok) throw new Error('Failed to get page summary data');
     return res.json();
   },
 

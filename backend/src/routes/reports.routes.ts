@@ -6,12 +6,62 @@ import {
   getPendingWithDeveloperData,
   getBugLifecycleData,
   getAzureImportData,
-  getBugTrackerData
+  getBugTrackerData,
+  getReopenAnalysisData,
+  getModuleQualityData,
+  getBugAgingData,
+  getModuleUiVsFunctionalData,
+  getPageSummaryData
 } from '../services/report-service.js';
 import { getAllBugs } from '../database/index.js';
 import { excelService } from '../integrations/excel/excel-service.js';
 
 export const reportsRouter = Router();
+
+reportsRouter.get('/reopen-analysis', (req, res, next) => {
+  try {
+    const data = getReopenAnalysisData();
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
+
+reportsRouter.get('/module-quality', (req, res, next) => {
+  try {
+    const data = getModuleQualityData();
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
+
+reportsRouter.get('/bug-aging', (req, res, next) => {
+  try {
+    const data = getBugAgingData();
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
+
+reportsRouter.get('/module-ui-vs-functional', (req, res, next) => {
+  try {
+    const data = getModuleUiVsFunctionalData();
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
+
+reportsRouter.get('/page-summary', (req, res, next) => {
+  try {
+    const data = getPageSummaryData();
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
 
 reportsRouter.get('/summary', (req, res, next) => {
   try {

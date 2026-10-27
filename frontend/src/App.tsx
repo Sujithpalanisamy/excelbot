@@ -15,6 +15,11 @@ import { BugLifecycleSheet } from './components/BugLifecycleSheet';
 import { PendingWithDeveloperSheet } from './components/PendingWithDeveloperSheet';
 import { ReportCatalogSheet } from './components/ReportCatalogSheet';
 import { ExecutiveReportSheet } from './components/ExecutiveReportSheet';
+import { ReopenAnalysisSheet } from './components/ReopenAnalysisSheet';
+import { ModuleQualitySheet } from './components/ModuleQualitySheet';
+import { BugAgingSheet } from './components/BugAgingSheet';
+import { ModuleUiVsFunctionalSheet } from './components/ModuleUiVsFunctionalSheet';
+import { PageSummarySheet } from './components/PageSummarySheet';
 import { AlertTriangle } from 'lucide-react';
 import type { BugItem, SettingsStatusResponse, SummaryDetail, ChatMessage, SettingsUpdateRequest } from './types';
 import { ALL_27_SHEETS } from './types';
@@ -510,14 +515,56 @@ export const App: React.FC = () => {
               if (fType === 'page') setSelectedPage(fVal);
             }}
           />
+        ) : activeSheetId === 10 ? (
+          <ReopenAnalysisSheet
+            onDownloadExcel={handleDownloadExcel}
+            onNavigateToSheet1WithFilter={(fType, fVal) => {
+              setActiveSheetId(1);
+              if (fType === 'developer') setSelectedAssignee(fVal);
+            }}
+          />
+        ) : activeSheetId === 12 ? (
+          <ModuleQualitySheet
+            onDownloadExcel={handleDownloadExcel}
+            onNavigateToSheet1WithFilter={(fType, fVal) => {
+              setActiveSheetId(1);
+              if (fType === 'module') setSelectedPage(fVal);
+            }}
+          />
+        ) : activeSheetId === 13 ? (
+          <BugAgingSheet
+            onDownloadExcel={handleDownloadExcel}
+            onNavigateToSheet1WithFilter={(fType, fVal) => {
+              setActiveSheetId(1);
+              if (fType === 'developer') setSelectedAssignee(fVal);
+              if (fType === 'module') setSelectedPage(fVal);
+              if (fType === 'bugId') setSearchQuery(fVal);
+            }}
+          />
         ) : activeSheetId === 21 ? (
           <ReportCatalogSheet />
+        ) : activeSheetId === 23 ? (
+          <ModuleUiVsFunctionalSheet
+            onDownloadExcel={handleDownloadExcel}
+            onNavigateToSheet1WithFilter={(fType, fVal) => {
+              setActiveSheetId(1);
+              if (fType === 'module') setSelectedPage(fVal);
+            }}
+          />
         ) : activeSheetId === 24 ? (
           <PendingWithDeveloperSheet
             onDownloadExcel={handleDownloadExcel}
             onNavigateToSheet1WithFilter={(fType, fVal) => {
               setActiveSheetId(1);
               if (fType === 'developer') setSelectedAssignee(fVal);
+              if (fType === 'page') setSelectedPage(fVal);
+            }}
+          />
+        ) : activeSheetId === 25 ? (
+          <PageSummarySheet
+            onDownloadExcel={handleDownloadExcel}
+            onNavigateToSheet1WithFilter={(fType, fVal) => {
+              setActiveSheetId(1);
               if (fType === 'page') setSelectedPage(fVal);
             }}
           />
