@@ -290,7 +290,7 @@ export const GanttSheet: React.FC<GanttSheetProps> = ({
                       >
                         {/* Page ID */}
                         <td className="py-2 px-3 text-center border-r border-slate-200 font-mono text-slate-600 font-semibold">
-                          #{g.pageId}
+                          {g.pageId}
                         </td>
 
                         {/* Module */}
@@ -387,7 +387,7 @@ export const GanttSheet: React.FC<GanttSheetProps> = ({
                 <div key={item.pageId} className="p-3 bg-slate-50 border border-slate-200 rounded hover:border-blue-400 transition-colors">
                   <div className="flex items-center justify-between text-xs mb-1.5">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-slate-600">#{item.pageId}</span>
+                      <span className="font-mono font-bold text-slate-600">Page {item.pageId}</span>
                       <span className="font-semibold text-slate-900">{item.pageName}</span>
                       <span className="bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded text-[10px] font-semibold">
                         {item.module}

@@ -206,7 +206,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                   >
                     <th scope="row" className="py-2 px-3 font-mono font-semibold text-sky-700 tabular-nums font-normal text-left">
                       <span className="bg-sky-50 px-2 py-0.5 rounded border border-sky-200/70 text-xs">
-                        #{b.id}
+                        {b.id}
                       </span>
                     </th>
                     <td className="py-2 px-3 font-medium text-slate-900 line-clamp-1">

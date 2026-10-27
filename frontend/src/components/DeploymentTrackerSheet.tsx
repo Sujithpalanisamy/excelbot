@@ -308,13 +308,13 @@ export const DeploymentTrackerSheet: React.FC<DeploymentTrackerSheetProps> = ({
                           <button
                             onClick={() => onNavigateToSheet1WithFilter?.('bugId', String(d.id))}
                             className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-900 hover:underline group-hover:font-bold"
-                            title={`Drill down Bug #${d.id} in Sheet 1`}
+                            title={`Drill down Bug ${d.id} in Sheet 1`}
                           >
-                            <span>#{d.id}</span>
+                            <span>{d.id}</span>
                             <ExternalLink className="w-2.5 h-2.5 opacity-60 group-hover:opacity-100" />
                           </button>
                         ) : (
-                          <span className="text-slate-600">#{d.id}</span>
+                          <span className="text-slate-600">{d.id}</span>
                         )}
                       </td>
 

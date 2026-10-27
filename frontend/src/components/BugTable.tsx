@@ -587,7 +587,7 @@ export const BugTable: React.FC<BugTableProps> = ({
                     <th scope="row" className="py-2.5 px-3.5 font-mono font-semibold text-sky-700 tabular-nums whitespace-nowrap font-normal text-left">
                       <div className="flex flex-col items-start gap-1">
                         <span className="bg-sky-50 px-2 py-0.5 rounded border border-sky-200/70 text-xs font-semibold">
-                          #{b.id}
+                          {b.id}
                         </span>
                         <span className="text-[10px] font-sans uppercase font-medium px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 border border-slate-200">
                           {b.work_item_type || 'Bug'}
@@ -667,7 +667,7 @@ export const BugTable: React.FC<BugTableProps> = ({
                     <td className="py-2.5 px-3.5">
                       <div className="relative">
                         <label htmlFor={`select-module-${b.id}`} className="sr-only">
-                          Override module classification for Bug #{b.id}
+                          Override module classification for Bug {b.id}
                         </label>
                         <select
                           id={`select-module-${b.id}`}

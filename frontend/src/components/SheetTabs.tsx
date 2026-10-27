@@ -208,11 +208,11 @@ export const SheetTabs: React.FC<SheetTabsProps> = ({
           onBugFetched?.(fetched);
           handleSelectBugItem(fetched);
         } else {
-          setFetchError(`Bug #${numericId} not found in database or Azure DevOps.`);
+          setFetchError(`Bug ${numericId} not found in database or Azure DevOps.`);
           setIsOpen(true);
         }
       } catch (err: any) {
-        setFetchError(err.message || `Bug #${numericId} could not be found.`);
+        setFetchError(err.message || `Bug ${numericId} could not be found.`);
         setIsOpen(true);
       } finally {
         setIsLoadingBug(false);
@@ -237,7 +237,7 @@ export const SheetTabs: React.FC<SheetTabsProps> = ({
         {/* Left: Active Sheet Identity */}
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-sky-600 text-white flex items-center justify-center font-bold text-sm shadow-2xs shrink-0">
-            #{activeSheet.id}
+            {SHEET_ICONS[activeSheet.id] || <Table className="w-4 h-4" />}
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -271,9 +271,8 @@ export const SheetTabs: React.FC<SheetTabsProps> = ({
           {/* Universal Bug ID Search Bar - Visible & Available on ALL 27 Sheets */}
           <div ref={searchContainerRef} className="relative min-w-[240px] sm:min-w-[280px] md:min-w-[320px]">
             <div className="relative flex items-center">
-              <div className="absolute left-2.5 flex items-center pointer-events-none text-sky-600">
-                <Search className="w-3.5 h-3.5 text-slate-400 mr-1" />
-                <span className="text-sky-600 font-mono font-bold text-xs">#</span>
+              <div className="absolute left-2.5 flex items-center pointer-events-none text-slate-400">
+                <Search className="w-3.5 h-3.5" />
               </div>
               <input
                 ref={searchInputRef}
@@ -290,7 +289,7 @@ export const SheetTabs: React.FC<SheetTabsProps> = ({
                 }}
                 onKeyDown={handleKeyDown}
                 placeholder="Search Bug ID (e.g. 10165)..."
-                className="w-full h-8 pl-9 pr-14 text-xs font-medium bg-white border border-slate-300 rounded-md text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 shadow-2xs transition-all"
+                className="w-full h-8 pl-8 pr-14 text-xs font-medium bg-white border border-slate-300 rounded-md text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 shadow-2xs transition-all"
                 autoComplete="off"
               />
               <div className="absolute right-1.5 flex items-center gap-1">
@@ -356,7 +355,7 @@ export const SheetTabs: React.FC<SheetTabsProps> = ({
                         >
                           <div className="shrink-0 pt-0.5">
                             <span className="inline-block px-1.5 py-0.5 text-xs font-mono font-bold rounded bg-sky-100 text-sky-800 border border-sky-200">
-                              #{b.id}
+                              ID: {b.id}
                             </span>
                           </div>
 
@@ -443,7 +442,7 @@ export const SheetTabs: React.FC<SheetTabsProps> = ({
                             className="px-2.5 py-1 text-xs font-semibold rounded bg-sky-600 hover:bg-sky-700 text-white shadow-2xs inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                           >
                             {isLoadingBug ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
-                            <span>Fetch Bug #{queryNoHash} Online</span>
+                            <span>Fetch Bug {queryNoHash} Online</span>
                           </button>
                         </div>
                       )}

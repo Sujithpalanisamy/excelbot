@@ -227,7 +227,7 @@ export const PriorityTasksSheet: React.FC<PriorityTasksSheetProps> = ({
           <table className="w-full text-xs text-left border-collapse">
             <thead className="bg-[#1B365D] text-white font-bold sticky top-0 z-10 select-none shadow-sm text-[11px]">
               <tr>
-                <th className="py-2.5 px-3 border-r border-[#2C4D75] w-16 text-center">#</th>
+                <th className="py-2.5 px-3 border-r border-[#2C4D75] w-16 text-center">S.No</th>
                 <th className="py-2.5 px-4 border-r border-[#2C4D75] min-w-[320px]">PRIORITY TASK NAME</th>
                 <th className="py-2.5 px-4 w-72">NOTES / EXECUTION STATUS</th>
               </tr>

@@ -289,13 +289,13 @@ export const DeploymentHistorySheet: React.FC<DeploymentHistorySheetProps> = ({
                           <button
                             onClick={() => onNavigateToSheet1WithFilter?.('bugId', String(h.id))}
                             className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-900 hover:underline group-hover:font-bold"
-                            title={`Drill down Bug #${h.id} in Sheet 1`}
+                            title={`Drill down Bug ${h.id} in Sheet 1`}
                           >
-                            <span>#{h.id}</span>
+                            <span>{h.id}</span>
                             <ExternalLink className="w-2.5 h-2.5 opacity-60 group-hover:opacity-100" />
                           </button>
                         ) : (
-                          <span className="text-slate-600">#{h.id}</span>
+                          <span className="text-slate-600">{h.id}</span>
                         )}
                       </td>
 

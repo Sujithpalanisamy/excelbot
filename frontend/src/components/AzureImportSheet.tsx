@@ -252,7 +252,7 @@ export const AzureImportSheet: React.FC<AzureImportSheetProps> = ({
                 return (
                   <tr key={idx} className="hover:bg-slate-50 transition-colors">
                     <td className="py-1 px-2.5 border border-slate-300 font-mono font-bold text-[#1b365d]">
-                      #{it.id}
+                      {it.id}
                     </td>
                     <td className="py-1 px-2.5 border border-slate-300 text-slate-600">
                       {it.work_item_type}

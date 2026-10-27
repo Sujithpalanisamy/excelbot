@@ -32,7 +32,7 @@ import { ListsSheet } from './components/ListsSheet';
 import { InstructionsSheet } from './components/InstructionsSheet';
 import { MiscSheet } from './components/MiscSheet';
 import { MappingSheet } from './components/MappingSheet';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Table } from 'lucide-react';
 import type { BugItem, SettingsStatusResponse, SummaryDetail, SettingsUpdateRequest } from './types';
 import { ALL_27_SHEETS } from './types';
 import { api } from './services/api';
@@ -581,8 +581,8 @@ export const App: React.FC = () => {
           />
         ) : (
           <div className="bg-white border border-slate-200 rounded-xl p-8 sm:p-12 text-center max-w-2xl mx-auto my-8 shadow-2xs">
-            <div className="w-14 h-14 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center mx-auto mb-4 border border-sky-100 font-bold text-xl font-display shadow-2xs">
-              #{activeSheetId}
+            <div className="w-14 h-14 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center mx-auto mb-4 border border-sky-100 shadow-2xs">
+              <Table className="w-7 h-7 text-sky-600" />
             </div>
             <h3 className="text-lg sm:text-xl font-bold font-display text-slate-900 mb-2">
               Sheet {activeSheetId}: {ALL_27_SHEETS.find(s => s.id === activeSheetId)?.name}

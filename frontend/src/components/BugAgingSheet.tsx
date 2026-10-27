@@ -335,7 +335,7 @@ export const BugAgingSheet: React.FC<BugAgingSheetProps> = ({
                       className="hover:underline flex items-center gap-1 cursor-pointer"
                       title="View bug in Sheet 1"
                     >
-                      <span>#{b.bug_id}</span>
+                      <span>{b.bug_id}</span>
                       <ExternalLink className="w-2.5 h-2.5 text-slate-400" />
                     </button>
                   </td>

@@ -156,7 +156,7 @@ export const ReportCatalogSheet: React.FC = () => {
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[10px]">
-                <th className="py-2.5 px-4 w-16">#</th>
+                <th className="py-2.5 px-4 w-16">S.No</th>
                 <th className="py-2.5 px-4 w-32">Module</th>
                 <th className="py-2.5 px-4">Standard Report Name</th>
                 <th className="py-2.5 px-4 text-center w-28">Status</th>
@@ -166,8 +166,8 @@ export const ReportCatalogSheet: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {filteredReports.map((r) => (
                 <tr key={r.id} className="hover:bg-slate-50/70 transition-colors">
-                  <td className="py-2.5 px-4 font-mono text-slate-400 font-semibold">
-                    #{r.id}
+                  <td className="py-2.5 px-4 font-mono text-slate-500 font-semibold">
+                    {r.id}
                   </td>
                   <td className="py-2.5 px-4">
                     <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${

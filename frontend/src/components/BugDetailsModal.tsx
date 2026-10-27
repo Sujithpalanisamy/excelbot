@@ -45,7 +45,7 @@ export const BugDetailsModal: React.FC<BugDetailsModalProps> = ({
           <div>
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
               <span className="font-mono text-xs font-semibold text-sky-700 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded">
-                #{bug.id}
+                ID: {bug.id}
               </span>
               <span className="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium border border-slate-200">
                 {bug.work_item_type}

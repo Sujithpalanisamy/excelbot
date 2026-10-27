@@ -246,7 +246,7 @@ export const ExecutiveReportSheet: React.FC<ExecutiveReportSheetProps> = ({
                 {filteredBugs.slice(0, 100).map((b) => (
                   <tr key={b.id} className="hover:bg-slate-50/70">
                     <td className="py-2 px-3 font-mono font-semibold text-sky-700">
-                      #{b.id}
+                      {b.id}
                     </td>
                     <td className="py-2 px-3 font-medium text-slate-900 max-w-sm truncate">
                       {b.title}

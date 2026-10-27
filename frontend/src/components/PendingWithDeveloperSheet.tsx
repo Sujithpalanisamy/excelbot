@@ -514,7 +514,7 @@ export const PendingWithDeveloperSheet: React.FC<PendingWithDeveloperSheetProps>
                       return (
                         <tr key={idx} className="hover:bg-slate-50 transition-colors">
                           <td className="py-1.5 px-3 border border-slate-300 font-mono font-bold text-[#1b365d]">
-                            #{b.id}
+                            {b.id}
                           </td>
                           <td className="py-1.5 px-3 border border-slate-300 font-medium text-slate-800">
                             {b.module}

@@ -289,7 +289,7 @@ export const BugLifecycleSheet: React.FC<BugLifecycleSheetProps> = ({
                 return (
                   <tr key={idx} className="hover:bg-slate-50 transition-colors">
                     <td className="py-1 px-2.5 border border-slate-300 font-mono font-bold text-[#1b365d]">
-                      #{it.bug_id}
+                      {it.bug_id}
                     </td>
                     <td className="py-1 px-2.5 border border-slate-300 font-semibold text-slate-800">
                       <button
