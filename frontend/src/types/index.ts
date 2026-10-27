@@ -219,6 +219,10 @@ export interface DashboardExcelData {
     rows: Array<{ module: string; uiBugs: number; functionalBugs: number; totalBugs: number }>;
     total: { uiBugs: number; functionalBugs: number; totalBugs: number };
   };
+  dailyTimeline?: Array<{ date: string; raised: number; reopened: number; closed: number; pending: number }>;
+  p1Issues?: { totalBugs: number; fixed: number; pending: number };
+  oct15Release?: { totalBugs: number; closed: number; reopened: number; pending: number };
+  quickStats?: { yesterday: number; pendingFromQa: number; pendingFromDev: number };
 }
 
 export interface PendingDeveloperRow {

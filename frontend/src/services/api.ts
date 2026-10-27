@@ -273,6 +273,16 @@ export const api = {
     return res.json();
   },
 
+  async getReportsCatalogData(): Promise<{
+    totalReports: number;
+    modules: string[];
+    reports: Array<{ id: number; module: string; name: string; used?: string }>;
+  }> {
+    const res = await fetch(`${API_BASE}/reports/catalog`);
+    if (!res.ok) throw new Error('Failed to get reports catalog data');
+    return res.json();
+  },
+
   async generatePageReport(pageName: string): Promise<{
     success: boolean;
     message: string;

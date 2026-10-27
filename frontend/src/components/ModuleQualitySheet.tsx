@@ -6,8 +6,19 @@ import {
   Layers, 
   Loader2,
   Sliders,
-  ShieldCheck
+  ShieldCheck,
+  BarChart3
 } from 'lucide-react';
+import { 
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  CartesianGrid
+} from 'recharts';
 import type { ModuleQualityData } from '../types';
 import { api } from '../services/api';
 
@@ -153,6 +164,38 @@ export const ModuleQualitySheet: React.FC<ModuleQualitySheetProps> = ({
           <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Avg Accuracy</div>
           <div className="text-xl font-bold text-emerald-700 mt-1">{data.total.moduleAccuracy}</div>
           <div className="text-[10px] text-emerald-600 mt-0.5">Weighted defect density</div>
+        </div>
+      </div>
+
+      {/* Module Defect Volume & Quality Chart */}
+      <div className="bg-white border border-slate-300 rounded p-4 shadow-2xs">
+        <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-[#1b365d]" />
+            <span className="font-bold text-slate-800 text-xs">Module Defects vs Accuracy % Matrix</span>
+          </div>
+          <span className="text-[10px] text-slate-500">Auto-calculated from Module Quality Matrix</span>
+        </div>
+        <div className="h-60 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data.rows.map(r => ({
+              module: r.module,
+              accuracy: parseFloat(r.moduleAccuracy) || 0,
+              bugs: r.bugs,
+              pages: r.pages,
+              completed: r.completedPages
+            }))} margin={{ top: 10, right: 10, left: -15, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis dataKey="module" tick={{ fontSize: 10 }} />
+              <YAxis yAxisId="left" domain={[0, 100]} unit="%" tick={{ fontSize: 10 }} />
+              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} />
+              <Tooltip />
+              <Legend verticalAlign="top" height={30} iconType="rect" />
+              <Bar yAxisId="left" dataKey="accuracy" name="Module Accuracy %" fill="#10b981" radius={[3, 3, 0, 0]} />
+              <Bar yAxisId="right" dataKey="bugs" name="Total Defects" fill="#ef4444" radius={[3, 3, 0, 0]} />
+              <Bar yAxisId="right" dataKey="completed" name="Completed Pages" fill="#0284c7" radius={[3, 3, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 

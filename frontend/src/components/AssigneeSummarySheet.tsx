@@ -6,8 +6,19 @@ import {
   Users, 
   Search, 
   Loader2,
-  ExternalLink
+  ExternalLink,
+  BarChart3
 } from 'lucide-react';
+import { 
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  CartesianGrid
+} from 'recharts';
 import type { AssigneeSummaryData } from '../types';
 import { api } from '../services/api';
 
@@ -158,6 +169,37 @@ export const AssigneeSummarySheet: React.FC<AssigneeSummarySheetProps> = ({
           <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Critical / High</div>
           <div className="text-xl font-bold text-rose-600 mt-1">{data.total.criticalHighSeverity}</div>
           <div className="text-[10px] text-rose-500 mt-0.5">P1/P2 priorities</div>
+        </div>
+      </div>
+
+      {/* Developer Workload Distribution Chart */}
+      <div className="bg-white border border-slate-300 rounded p-4 shadow-2xs">
+        <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-[#1b365d]" />
+            <span className="font-bold text-slate-800 text-xs">Developer Workload &amp; State Breakdown</span>
+          </div>
+          <span className="text-[10px] text-slate-500">Open vs Active vs Closed Bugs</span>
+        </div>
+        <div className="h-60 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data.rows.slice(0, 10).map(r => ({
+              developer: r.assignedTo,
+              open: r.openBugs,
+              active: r.activeBugs,
+              closed: r.closedBugs,
+              total: r.totalBugs
+            }))} margin={{ top: 10, right: 10, left: -15, bottom: 25 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis dataKey="developer" angle={-25} textAnchor="end" tick={{ fontSize: 10 }} interval={0} />
+              <YAxis tick={{ fontSize: 10 }} />
+              <Tooltip />
+              <Legend verticalAlign="top" height={30} iconType="rect" />
+              <Bar dataKey="open" name="Open (New/To Do)" stackId="a" fill="#f59e0b" />
+              <Bar dataKey="active" name="Active / Committed" stackId="a" fill="#0284c7" />
+              <Bar dataKey="closed" name="Closed / Done" stackId="a" fill="#10b981" radius={[3, 3, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 

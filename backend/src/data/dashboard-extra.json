@@ -1,0 +1,531 @@
+{
+  "dailyTimeline": [
+    {
+      "date": "2026-07-14",
+      "raised": 42,
+      "reopened": 1,
+      "closed": 41,
+      "pending": 1
+    },
+    {
+      "date": "2026-07-15",
+      "raised": 367,
+      "reopened": 1,
+      "closed": 358,
+      "pending": 9
+    },
+    {
+      "date": "2026-07-16",
+      "raised": 22,
+      "reopened": 0,
+      "closed": 19,
+      "pending": 3
+    },
+    {
+      "date": "2026-07-17",
+      "raised": 10,
+      "reopened": 0,
+      "closed": 10,
+      "pending": 0
+    },
+    {
+      "date": "2026-07-20",
+      "raised": 4,
+      "reopened": 0,
+      "closed": 4,
+      "pending": 0
+    },
+    {
+      "date": "2026-07-21",
+      "raised": 2,
+      "reopened": 0,
+      "closed": 2,
+      "pending": 0
+    },
+    {
+      "date": "2026-07-22",
+      "raised": 9,
+      "reopened": 0,
+      "closed": 8,
+      "pending": 1
+    },
+    {
+      "date": "2026-07-23",
+      "raised": 7,
+      "reopened": 0,
+      "closed": 7,
+      "pending": 0
+    },
+    {
+      "date": "2026-07-24",
+      "raised": 3,
+      "reopened": 0,
+      "closed": 3,
+      "pending": 0
+    },
+    {
+      "date": "2026-07-27",
+      "raised": 3,
+      "reopened": 0,
+      "closed": 3,
+      "pending": 0
+    },
+    {
+      "date": "2026-07-28",
+      "raised": 23,
+      "reopened": 0,
+      "closed": 23,
+      "pending": 0
+    },
+    {
+      "date": "2026-07-29",
+      "raised": 2,
+      "reopened": 0,
+      "closed": 1,
+      "pending": 1
+    },
+    {
+      "date": "2026-07-30",
+      "raised": 9,
+      "reopened": 0,
+      "closed": 9,
+      "pending": 0
+    },
+    {
+      "date": "2026-07-31",
+      "raised": 2,
+      "reopened": 0,
+      "closed": 2,
+      "pending": 0
+    },
+    {
+      "date": "2026-08-03",
+      "raised": 11,
+      "reopened": 0,
+      "closed": 11,
+      "pending": 0
+    },
+    {
+      "date": "2026-08-04",
+      "raised": 11,
+      "reopened": 0,
+      "closed": 11,
+      "pending": 0
+    },
+    {
+      "date": "2026-08-05",
+      "raised": 7,
+      "reopened": 0,
+      "closed": 7,
+      "pending": 0
+    },
+    {
+      "date": "2026-08-06",
+      "raised": 6,
+      "reopened": 0,
+      "closed": 6,
+      "pending": 0
+    },
+    {
+      "date": "2026-08-07",
+      "raised": 0,
+      "reopened": 0,
+      "closed": 0,
+      "pending": 0
+    },
+    {
+      "date": "2026-08-10",
+      "raised": 11,
+      "reopened": 0,
+      "closed": 11,
+      "pending": 0
+    },
+    {
+      "date": "2026-08-11",
+      "raised": 9,
+      "reopened": 0,
+      "closed": 9,
+      "pending": 0
+    },
+    {
+      "date": "2026-08-12",
+      "raised": 0,
+      "reopened": 0,
+      "closed": 0,
+      "pending": 0
+    },
+    {
+      "date": "2026-08-13",
+      "raised": 0,
+      "reopened": 0,
+      "closed": 0,
+      "pending": 0
+    },
+    {
+      "date": "2026-08-14",
+      "raised": 13,
+      "reopened": 2,
+      "closed": 11,
+      "pending": 2
+    },
+    {
+      "date": "2026-08-16",
+      "raised": 1,
+      "reopened": 0,
+      "closed": 1,
+      "pending": 0
+    },
+    {
+      "date": "2026-08-17",
+      "raised": 17,
+      "reopened": 0,
+      "closed": 17,
+      "pending": 0
+    },
+    {
+      "date": "2026-08-18",
+      "raised": 15,
+      "reopened": 0,
+      "closed": 15,
+      "pending": 0
+    },
+    {
+      "date": "2026-08-19",
+      "raised": 26,
+      "reopened": 0,
+      "closed": 24,
+      "pending": 2
+    },
+    {
+      "date": "2026-08-20",
+      "raised": 0,
+      "reopened": 0,
+      "closed": 0,
+      "pending": 0
+    },
+    {
+      "date": "2026-08-21",
+      "raised": 8,
+      "reopened": 0,
+      "closed": 8,
+      "pending": 0
+    },
+    {
+      "date": "2026-08-24",
+      "raised": 36,
+      "reopened": 1,
+      "closed": 32,
+      "pending": 4
+    },
+    {
+      "date": "2026-08-25",
+      "raised": 12,
+      "reopened": 0,
+      "closed": 10,
+      "pending": 2
+    },
+    {
+      "date": "2026-08-26",
+      "raised": 6,
+      "reopened": 0,
+      "closed": 5,
+      "pending": 1
+    },
+    {
+      "date": "2026-08-27",
+      "raised": 0,
+      "reopened": 0,
+      "closed": 0,
+      "pending": 0
+    },
+    {
+      "date": "2026-08-28",
+      "raised": 3,
+      "reopened": 1,
+      "closed": 2,
+      "pending": 1
+    },
+    {
+      "date": "2026-08-31",
+      "raised": 19,
+      "reopened": 0,
+      "closed": 16,
+      "pending": 3
+    },
+    {
+      "date": "2026-09-01",
+      "raised": 19,
+      "reopened": 0,
+      "closed": 15,
+      "pending": 4
+    },
+    {
+      "date": "2026-09-02",
+      "raised": 10,
+      "reopened": 0,
+      "closed": 9,
+      "pending": 1
+    },
+    {
+      "date": "2026-09-03",
+      "raised": 9,
+      "reopened": 0,
+      "closed": 8,
+      "pending": 1
+    },
+    {
+      "date": "2026-09-04",
+      "raised": 4,
+      "reopened": 0,
+      "closed": 4,
+      "pending": 0
+    },
+    {
+      "date": "2026-09-07",
+      "raised": 8,
+      "reopened": 0,
+      "closed": 8,
+      "pending": 0
+    },
+    {
+      "date": "2026-09-08",
+      "raised": 0,
+      "reopened": 0,
+      "closed": 0,
+      "pending": 0
+    },
+    {
+      "date": "2026-09-09",
+      "raised": 9,
+      "reopened": 0,
+      "closed": 8,
+      "pending": 1
+    },
+    {
+      "date": "2026-09-10",
+      "raised": 6,
+      "reopened": 0,
+      "closed": 5,
+      "pending": 1
+    },
+    {
+      "date": "2026-09-11",
+      "raised": 0,
+      "reopened": 0,
+      "closed": 0,
+      "pending": 0
+    },
+    {
+      "date": "2026-09-13",
+      "raised": 1,
+      "reopened": 0,
+      "closed": 1,
+      "pending": 0
+    },
+    {
+      "date": "2026-09-14",
+      "raised": 0,
+      "reopened": 0,
+      "closed": 0,
+      "pending": 0
+    },
+    {
+      "date": "2026-09-15",
+      "raised": 2,
+      "reopened": 0,
+      "closed": 0,
+      "pending": 2
+    },
+    {
+      "date": "2026-09-16",
+      "raised": 10,
+      "reopened": 0,
+      "closed": 8,
+      "pending": 2
+    },
+    {
+      "date": "2026-09-17",
+      "raised": 20,
+      "reopened": 0,
+      "closed": 15,
+      "pending": 5
+    },
+    {
+      "date": "2026-09-18",
+      "raised": 2,
+      "reopened": 1,
+      "closed": 1,
+      "pending": 1
+    },
+    {
+      "date": "2026-09-21",
+      "raised": 6,
+      "reopened": 0,
+      "closed": 4,
+      "pending": 2
+    },
+    {
+      "date": "2026-09-22",
+      "raised": 4,
+      "reopened": 0,
+      "closed": 4,
+      "pending": 0
+    },
+    {
+      "date": "2026-09-23",
+      "raised": 11,
+      "reopened": 0,
+      "closed": 11,
+      "pending": 0
+    },
+    {
+      "date": "2026-09-24",
+      "raised": 8,
+      "reopened": 0,
+      "closed": 6,
+      "pending": 2
+    },
+    {
+      "date": "2026-09-25",
+      "raised": 4,
+      "reopened": 0,
+      "closed": 4,
+      "pending": 0
+    },
+    {
+      "date": "2026-09-28",
+      "raised": 3,
+      "reopened": 0,
+      "closed": 2,
+      "pending": 1
+    },
+    {
+      "date": "2026-09-29",
+      "raised": 4,
+      "reopened": 0,
+      "closed": 3,
+      "pending": 1
+    },
+    {
+      "date": "2026-09-30",
+      "raised": 11,
+      "reopened": 0,
+      "closed": 5,
+      "pending": 6
+    },
+    {
+      "date": "2026-10-01",
+      "raised": 7,
+      "reopened": 0,
+      "closed": 1,
+      "pending": 6
+    },
+    {
+      "date": "2026-10-02",
+      "raised": 0,
+      "reopened": 0,
+      "closed": 0,
+      "pending": 0
+    },
+    {
+      "date": "2026-10-05",
+      "raised": 21,
+      "reopened": 0,
+      "closed": 3,
+      "pending": 18
+    },
+    {
+      "date": "2026-10-06",
+      "raised": 25,
+      "reopened": 0,
+      "closed": 0,
+      "pending": 25
+    },
+    {
+      "date": "2026-10-07",
+      "raised": 2,
+      "reopened": 0,
+      "closed": 0,
+      "pending": 2
+    },
+    {
+      "date": "2026-10-08",
+      "raised": 7,
+      "reopened": 0,
+      "closed": 0,
+      "pending": 7
+    },
+    {
+      "date": "2026-10-09",
+      "raised": 0,
+      "reopened": 0,
+      "closed": 0,
+      "pending": 0
+    },
+    {
+      "date": "2026-10-12",
+      "raised": 16,
+      "reopened": 2,
+      "closed": 23,
+      "pending": 16
+    },
+    {
+      "date": "2026-10-13",
+      "raised": 29,
+      "reopened": 1,
+      "closed": 1,
+      "pending": 28
+    },
+    {
+      "date": "2026-10-14",
+      "raised": 8,
+      "reopened": 0,
+      "closed": 0,
+      "pending": 8
+    },
+    {
+      "date": "2026-10-15",
+      "raised": 9,
+      "reopened": 0,
+      "closed": 0,
+      "pending": 9
+    },
+    {
+      "date": "2026-10-16",
+      "raised": 1,
+      "reopened": 5,
+      "closed": 41,
+      "pending": 1
+    },
+    {
+      "date": "2026-10-19",
+      "raised": 10,
+      "reopened": 2,
+      "closed": 6,
+      "pending": 10
+    },
+    {
+      "date": "2026-10-21",
+      "raised": 5,
+      "reopened": 0,
+      "closed": 0,
+      "pending": 5
+    }
+  ],
+  "p1Issues": {
+    "totalBugs": 169,
+    "fixed": 154,
+    "pending": 15
+  },
+  "oct15Release": {
+    "totalBugs": 60,
+    "closed": 47,
+    "reopened": 7,
+    "pending": 6
+  },
+  "quickStats": {
+    "yesterday": 5,
+    "pendingFromQa": 131,
+    "pendingFromDev": 108
+  }
+}

@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FileSpreadsheet, 
   Search, 
   Download, 
   CheckCircle2, 
-  ExternalLink
+  ExternalLink,
+  Loader2
 } from 'lucide-react';
+import { api } from '../services/api';
 
 interface ReportCatalogItem {
   id: number;
@@ -14,7 +16,7 @@ interface ReportCatalogItem {
   used?: string;
 }
 
-// Master reports catalog extracted from Sheet 21 of the Excel Tracker
+// Master reports catalog fallback
 const MASTER_REPORTS_CATALOG: ReportCatalogItem[] = [
   { id: 1, module: 'EDM', name: 'Nominee Information', used: 'Active' },
   { id: 2, module: 'EDM', name: 'Personal Accidental Insurance', used: 'Active' },
@@ -22,57 +24,35 @@ const MASTER_REPORTS_CATALOG: ReportCatalogItem[] = [
   { id: 4, module: 'EDM', name: 'Asset Report', used: 'Active' },
   { id: 5, module: 'EDM', name: 'Employee Employment Information', used: 'Active' },
   { id: 6, module: 'EDM', name: 'Employee Personal Information', used: 'Active' },
-  { id: 7, module: 'EDM', name: 'Employee Master Information Report', used: 'Active' },
-  { id: 8, module: 'EDM', name: 'Previous Employment Report', used: 'Active' },
-  { id: 9, module: 'EDM', name: 'Manage Role Access Report', used: 'Active' },
-  { id: 10, module: 'EDM', name: 'Qualification and Skill Details', used: 'Active' },
-  { id: 11, module: 'EDM', name: 'Statutory Information Report', used: 'Active' },
-  { id: 12, module: 'EDM', name: 'Family Information Report', used: 'Active' },
-  { id: 13, module: 'EDM', name: 'Mediclaim Nominee Details Report', used: 'Active' },
-  { id: 14, module: 'EDM', name: 'Address Details Report', used: 'Active' },
-  { id: 15, module: 'EDM', name: 'Bank Details Report', used: 'Active' },
-  { id: 16, module: 'EDM', name: 'Contact Information Report', used: 'Active' },
-  { id: 17, module: 'EDM', name: 'Employee Resignation Report', used: 'Active' },
-  { id: 18, module: 'EDM', name: 'Direct Reporter Report', used: 'Active' },
-  { id: 19, module: 'EDM', name: 'Department Change Report', used: 'Active' },
-  { id: 20, module: 'EDM', name: 'Designation History Report', used: 'Active' },
-
-  // Leave Module Reports
-  { id: 21, module: 'Leave', name: 'Leave Balance Report', used: 'Active' },
-  { id: 22, module: 'Leave', name: 'Leave Application Register', used: 'Active' },
-  { id: 23, module: 'Leave', name: 'Comp-Off Availment Report', used: 'Active' },
-  { id: 24, module: 'Leave', name: 'Loss of Pay (LOP) Summary', used: 'Active' },
-  { id: 25, module: 'Leave', name: 'Maternity / Paternity Grant Tracker', used: 'Active' },
-  { id: 26, module: 'Leave', name: 'Leave Encashment Report', used: 'Active' },
-  { id: 27, module: 'Leave', name: 'Year-End Leave Lapse Report', used: 'Active' },
-  { id: 28, module: 'Leave', name: 'Pending Leave Approvals Matrix', used: 'Active' },
-
-  // Attendance Module Reports
-  { id: 29, module: 'Attendance', name: 'Daily Attendance Punch Report', used: 'Active' },
-  { id: 30, module: 'Attendance', name: 'Shift Roster Allocation Report', used: 'Active' },
-  { id: 31, module: 'Attendance', name: 'Late Coming & Early Leaving Register', used: 'Active' },
-  { id: 32, module: 'Attendance', name: 'Overtime Hours Calculation', used: 'Active' },
-  { id: 33, module: 'Attendance', name: 'Biometric Device Sync Log', used: 'Active' },
-  { id: 34, module: 'Attendance', name: 'Manual Attendance Regularization Report', used: 'Active' },
-  { id: 35, module: 'Attendance', name: 'Monthly Attendance Muster Roll', used: 'Active' },
-
-  // Payroll Module Reports
-  { id: 36, module: 'Payroll', name: 'Salary Register & Bank Transfer Summary', used: 'Active' },
-  { id: 37, module: 'Payroll', name: 'PF & ESI Statutory Deduction Report', used: 'Active' },
-  { id: 38, module: 'Payroll', name: 'Income Tax Form 16 / TDS Deduction', used: 'Active' },
-  { id: 39, module: 'Payroll', name: 'Reimbursement Claim Audit Report', used: 'Active' },
-  { id: 40, module: 'Payroll', name: 'Bonus & Gratuity Calculation Statement', used: 'Active' },
-  { id: 41, module: 'Payroll', name: 'Loan & Advance Recovery Statement', used: 'Active' },
-  { id: 42, module: 'Payroll', name: 'Full & Final Settlement (F&F) Statement', used: 'Active' }
+  { id: 7, module: 'EDM', name: 'Employee Master Information Report', used: 'Active' }
 ];
 
 export const ReportCatalogSheet: React.FC = () => {
+  const [reportsList, setReportsList] = useState<ReportCatalogItem[]>(MASTER_REPORTS_CATALOG);
+  const [modulesList, setModulesList] = useState<string[]>(['All', 'EDM', 'Leave', 'Attendance', 'Payroll']);
   const [selectedModule, setSelectedModule] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const modules = ['All', 'EDM', 'Leave', 'Attendance', 'Payroll'];
+  useEffect(() => {
+    let isMounted = true;
+    api.getReportsCatalogData()
+      .then(res => {
+        if (isMounted && res.reports && res.reports.length > 0) {
+          setReportsList(res.reports);
+          if (res.modules && res.modules.length > 0) {
+            setModulesList(['All', ...res.modules]);
+          }
+        }
+      })
+      .catch(err => console.warn('Using fallback reports list:', err.message))
+      .finally(() => { if (isMounted) setIsLoading(false); });
+    return () => { isMounted = false; };
+  }, []);
 
-  const filteredReports = MASTER_REPORTS_CATALOG.filter((r) => {
+  const modules = modulesList;
+
+  const filteredReports = reportsList.filter((r) => {
     if (selectedModule !== 'All' && r.module !== selectedModule) return false;
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -108,8 +88,15 @@ export const ReportCatalogSheet: React.FC = () => {
               <h2 className="text-base sm:text-lg font-bold font-display text-slate-900">
                 Sheet 21: Reports Catalog (HRMS Module Register)
               </h2>
-              <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-50 text-sky-800 border border-sky-200">
-                {MASTER_REPORTS_CATALOG.length} Standard Reports
+              <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-50 text-sky-800 border border-sky-200 inline-flex items-center gap-1.5">
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-3 h-3 animate-spin text-sky-600" />
+                    <span>Loading...</span>
+                  </>
+                ) : (
+                  <span>{reportsList.length} Standard Reports</span>
+                )}
               </span>
             </div>
             <p className="text-xs text-slate-500 font-sans mt-0.5">

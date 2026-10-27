@@ -125,75 +125,39 @@
       {
         "step": "9. Lists",
         "guidance": "Update developer and QA names in Lists. Use exactly the same names throughout the workbook."
-      },
-      {
-        "step": "AUTOMATED AZURE REFRESH",
-        "guidance": ""
-      },
-      {
-        "step": "Step 1 - Download",
-        "guidance": "In Azure DevOps run the query and export to CSV (columns: ID, Work Item Type, Title, Assigned To, State, Tags, Created Date)."
-      },
-      {
-        "step": "Step 2 - Paste",
-        "guidance": "Open the 'Azure Import' sheet, click A4, Paste Values of everything below the CSV header row. Clear any leftover old rows underneath."
-      },
-      {
-        "step": "Step 3 - Done",
-        "guidance": "'Module UI vs Functional' and 'Pending With Developer' recalculate instantly. No other action needed."
-      },
-      {
-        "step": "Classification",
-        "guidance": "Module comes from the Bug Tracker when the bug already exists there, otherwise from the keyword rules on the 'Mapping' sheet. UI vs Functional comes from the Azure Tags (UI / Functional) first, then the UI keyword list on 'Mapping'. Edit those lists to fine-tune."
-      },
-      {
-        "step": "New bugs",
-        "guidance": "Column O on 'Azure Import' flags IDs that are not yet in the Bug Tracker in red - copy those rows into the Bug Tracker to keep the scorecards complete."
-      },
-      {
-        "step": "Sync check",
-        "guidance": "Bug Tracker columns AB and AC compare its Status against the latest Azure State and flag MISMATCH."
       }
     ],
     "colorCodes": [
       {
-        "role": "Table Headers",
+        "role": "Formula Cells",
+        "code": "#FFF2CC",
+        "desc": "Auto-calculated. Do not edit."
+      },
+      {
+        "role": "Headers / Banners",
         "code": "#1B365D",
-        "desc": "Dark Navy Blue — Primary Section Banners & Column Headers"
+        "desc": "Sheet headers and section dividers"
       },
       {
-        "role": "Calculated Totals",
-        "code": "#FFF2CC",
-        "desc": "Soft Yellow — Formula-Driven Sum / Average Summary Rows"
+        "role": "Table Headers",
+        "code": "#2B5B84",
+        "desc": "Main column headings"
       },
       {
-        "role": "Section Subtitles",
-        "code": "#D9E1F2",
-        "desc": "Soft Blue — Module Groups & Table Headers"
+        "role": "Data Rows",
+        "code": "#FFFFFF",
+        "desc": "Standard data entry rows"
       },
       {
-        "role": "Critical Severity",
-        "code": "#FCE4D6",
-        "desc": "Soft Red/Peach — High Defect Alerts & Urgent Focus"
-      },
-      {
-        "role": "High Severity",
-        "code": "#FFF2CC",
-        "desc": "Soft Yellow — Priority Attention Items"
-      },
-      {
-        "role": "Completed / Pass",
-        "code": "#E2EFDA",
-        "desc": "Soft Green — 100% Verified Milestones & Passes"
+        "role": "Totals",
+        "code": "#F2F2F2",
+        "desc": "Summary and aggregation rows"
       }
     ],
     "rules": [
-      "Enter one row per page in Page Tracker with assigned developers across UI, API, SP, DB and Binding.",
-      "Log every bug in Bug Tracker. Original Developer created the component; Fix Developer resolves the defect.",
-      "For parent bugs, leave Parent Bug ID blank and select Parent. For internal child bugs, link the Parent ID.",
-      "Set Reopened? to Yes and increment No. of Reopens whenever a fix fails QA retesting.",
-      "Developer Scorecard & QA Scorecard auto-calculate based on active bug states and testing metrics.",
-      "Dashboard formulas recalculate in real-time. Do not type over calculated cells."
+      "Enter one row per page or bug.",
+      "Do not overwrite formulas in yellow cells.",
+      "Ensure ID values match between Azure Import and Bug Tracker."
     ]
   },
   "misc": {
@@ -359,80 +323,24 @@
     ],
     "fields": [
       {
-        "item": "",
-        "notes": "Issue letter"
+        "item": "Confirmation Due Date",
+        "notes": "it  is accessible in  P"
       },
       {
-        "item": "",
-        "notes": "Configuration"
+        "item": "Generate Letter",
+        "notes": ""
       },
       {
-        "item": "",
-        "notes": "Letter Type"
+        "item": "Issue Letter",
+        "notes": ""
       },
       {
-        "item": "",
-        "notes": "Letter Email Template"
+        "item": "Special Letters",
+        "notes": ""
       },
       {
-        "item": "",
-        "notes": "Letter Template List"
-      },
-      {
-        "item": "",
-        "notes": "Document Repository"
-      },
-      {
-        "item": "",
-        "notes": "Checklist Bulk Upload"
-      },
-      {
-        "item": "",
-        "notes": "Other Setting"
-      },
-      {
-        "item": "",
-        "notes": "Map Forms / FAQ / Policies"
-      },
-      {
-        "item": "",
-        "notes": "Connect"
-      },
-      {
-        "item": "",
-        "notes": "WorkFlow Privileged Actors Dashboard"
-      },
-      {
-        "item": "",
-        "notes": "Doc Template Dashboard"
-      },
-      {
-        "item": "",
-        "notes": "Map Document Template To Employee Set"
-      },
-      {
-        "item": "",
-        "notes": "Module Attachments"
-      },
-      {
-        "item": "",
-        "notes": "Delegate Authority"
-      },
-      {
-        "item": "",
-        "notes": "Manage Role Access"
-      },
-      {
-        "item": "",
-        "notes": "Excel Upload"
-      },
-      {
-        "item": "",
-        "notes": "Excel Mapping"
-      },
-      {
-        "item": "",
-        "notes": "Checklist Templates"
+        "item": "Employee Documents",
+        "notes": ""
       }
     ]
   },
@@ -534,7 +442,6 @@
       "colour",
       "color",
       "font",
-      "ui",
       "ui",
       "design",
       "layout",

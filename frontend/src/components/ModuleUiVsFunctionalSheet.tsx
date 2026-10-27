@@ -6,8 +6,19 @@ import {
   Layout, 
   Cpu, 
   Loader2,
-  PieChart
+  PieChart,
+  BarChart3
 } from 'lucide-react';
+import { 
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  CartesianGrid
+} from 'recharts';
 import type { ModuleUiVsFunctionalData } from '../types';
 import { api } from '../services/api';
 
@@ -163,6 +174,35 @@ export const ModuleUiVsFunctionalSheet: React.FC<ModuleUiVsFunctionalSheetProps>
             {data.total.allBugs > 0 ? ((data.total.closedTotal / data.total.allBugs) * 100).toFixed(1) + '%' : '0%'}
           </div>
           <div className="text-[10px] text-emerald-600 mt-0.5">Resolved vs all bugs</div>
+        </div>
+      </div>
+
+      {/* UI vs Functional Breakdown Chart */}
+      <div className="bg-white border border-slate-300 rounded p-4 shadow-2xs">
+        <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-[#1b365d]" />
+            <span className="font-bold text-slate-800 text-xs">Module UI vs Functional Defect Distribution</span>
+          </div>
+          <span className="text-[10px] text-slate-500">Live Breakdown per Module</span>
+        </div>
+        <div className="h-60 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data.rows.map(r => ({
+              module: r.module,
+              uiTotal: r.uiTotal,
+              functionalTotal: r.functionalTotal,
+              allBugs: r.allBugs
+            }))} margin={{ top: 10, right: 10, left: -15, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis dataKey="module" tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} />
+              <Tooltip />
+              <Legend verticalAlign="top" height={30} iconType="rect" />
+              <Bar dataKey="uiTotal" name="UI Bugs" stackId="a" fill="#8b5cf6" />
+              <Bar dataKey="functionalTotal" name="Functional Bugs" stackId="a" fill="#0284c7" radius={[3, 3, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 

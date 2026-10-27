@@ -3,8 +3,32 @@ import {
   Download, 
   Printer, 
   FileSpreadsheet,
-  Loader2
+  Loader2,
+  PieChart as PieIcon,
+  BarChart3,
+  TrendingUp,
+  Clock,
+  Layers,
+  ChevronDown,
+  ChevronUp,
+  Activity,
+  AlertCircle
 } from 'lucide-react';
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  CartesianGrid,
+  AreaChart,
+  Area
+} from 'recharts';
 import type { DashboardExcelData, BugItem } from '../types';
 import { api } from '../services/api';
 
@@ -13,6 +37,42 @@ interface DashboardSheetProps {
   onNavigateToSheet1WithFilter?: (filterType: string, filterValue: string) => void;
   onDownloadExcel: () => void;
 }
+
+const STATUS_COLORS: Record<string, string> = {
+  New: '#0284c7',
+  Committed: '#f59e0b',
+  Done: '#10b981',
+  Total: '#1b365d'
+};
+
+const SEVERITY_COLORS: Record<string, string> = {
+  Critical: '#ef4444',
+  High: '#f97316',
+  Medium: '#eab308',
+  Low: '#3b82f6'
+};
+
+const QA_STATUS_COLORS: Record<string, string> = {
+  Closed: '#10b981',
+  Reopened: '#ef4444',
+  'Pending QA': '#f59e0b'
+};
+
+const PRIORITY_COLORS: Record<string, string> = {
+  P1: '#ef4444',
+  P2: '#f97316',
+  P3: '#3b82f6',
+  P4: '#94a3b8'
+};
+
+const AGING_COLORS = {
+  d0_7: '#10b981',
+  d8_15: '#84cc16',
+  d16_30: '#eab308',
+  d31_45: '#f97316',
+  d46_60: '#ef4444',
+  d60_plus: '#991b1b'
+};
 
 export const DashboardSheet: React.FC<DashboardSheetProps> = ({
   allBugs,
@@ -23,6 +83,8 @@ export const DashboardSheet: React.FC<DashboardSheetProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'excel' | 'live'>('excel');
   const [asOfDate, setAsOfDate] = useState('26-Oct-2026');
+  const [showCharts, setShowCharts] = useState(true);
+  const [showDailyTable, setShowDailyTable] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -106,11 +168,93 @@ export const DashboardSheet: React.FC<DashboardSheetProps> = ({
     return (
       <div className="bg-white border border-slate-300 rounded p-12 text-center shadow-xs">
         <Loader2 className="w-8 h-8 animate-spin text-[#1b365d] mx-auto mb-3" />
-        <h3 className="font-bold text-slate-800 text-sm">Rendering Exact Sheet 2 Dashboard...</h3>
-        <p className="text-xs text-slate-500 mt-1">Replicating Excel formulas, cell grids, and exact color palettes</p>
+        <h3 className="font-bold text-slate-800 text-sm">Rendering Exact Sheet 2 Dashboard & Visual Graphs...</h3>
+        <p className="text-xs text-slate-500 mt-1">Replicating Excel formulas, cell grids, charts and exact color palettes</p>
       </div>
     );
   }
+
+  // Chart data preppers
+  const bugStatusPieData = data.bugStatus
+    .filter(s => s.status !== 'Total')
+    .map(s => ({
+      name: s.status,
+      value: viewMode === 'live' && s.liveCount !== undefined ? s.liveCount : s.count,
+      color: STATUS_COLORS[s.status] || '#64748b'
+    }));
+
+  const severityBarData = data.severity.map(s => ({
+    name: s.severity,
+    count: viewMode === 'live' && s.liveCount !== undefined ? s.liveCount : s.count,
+    fill: SEVERITY_COLORS[s.severity] || '#64748b'
+  }));
+
+  const devScoreChartData = data.developerScorecard.map(d => ({
+    developer: d.developer,
+    devAccuracy: parseFloat(d.devAccuracy) || 0,
+    fixAccuracy: parseFloat(d.fixAccuracy) || 0,
+    finalScore: parseFloat(d.finalScore) || 0
+  }));
+
+  const moduleQualityChartData = data.moduleQuality.map(m => ({
+    module: m.module,
+    progress: parseFloat(m.progress) || 0,
+    accuracy: parseFloat(m.accuracy) || 0
+  }));
+
+  const deploymentDatesData = data.deploymentSummary.dates.map(d => ({
+    date: d.date.replace(/-\d{4}$/, ''),
+    bugs: d.bugsDeployed,
+    tasks: d.tasksDeployed,
+    total: d.total
+  }));
+
+  const bugQaStatusPieData = data.bugQaStatus.map(q => ({
+    name: q.status,
+    value: q.count,
+    color: QA_STATUS_COLORS[q.status] || '#64748b'
+  }));
+
+  const bugPriorityBarData = data.bugPriority.map(p => ({
+    priority: p.priority,
+    count: p.count,
+    fill: PRIORITY_COLORS[p.priority] || '#64748b'
+  }));
+
+  const devAgingData = data.devAgeingMatrix.rows.map(r => ({
+    developer: r.developer,
+    '0-7 Days': r.d0_7,
+    '8-15 Days': r.d8_15,
+    '16-30 Days': r.d16_30,
+    '31-45 Days': r.d31_45,
+    '46-60 Days': r.d46_60,
+    '60+ Days': r.d60_plus
+  }));
+
+  const moduleAgingData = data.moduleAgeingMatrix.rows.map(r => ({
+    module: r.module,
+    '0-7 Days': r.d0_7,
+    '8-15 Days': r.d8_15,
+    '16-30 Days': r.d16_30,
+    '31-45 Days': r.d31_45,
+    '46-60 Days': r.d46_60,
+    '60+ Days': r.d60_plus
+  }));
+
+  const uiVsFunctionalData = data.bugsCategory.rows.map(r => ({
+    module: r.module,
+    'UI Bugs': r.uiBugs,
+    'Functional Bugs': r.functionalBugs,
+    'Total Bugs': r.totalBugs
+  }));
+
+  const dailyTimelineData = (data.dailyTimeline || []).map(t => ({
+    date: t.date.slice(5),
+    raised: t.raised,
+    reopened: t.reopened,
+    closed: t.closed,
+    pending: t.pending
+  }));
 
   return (
     <div className="space-y-4 font-sans text-xs select-text">
@@ -123,7 +267,7 @@ export const DashboardSheet: React.FC<DashboardSheetProps> = ({
               Sheet 2: Dashboard
             </span>
             <span className="font-mono text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-              Excel Grid: A1:H110
+              Excel Grid: A1:H110 &amp; 11 Charts
             </span>
           </div>
 
@@ -152,6 +296,20 @@ export const DashboardSheet: React.FC<DashboardSheetProps> = ({
               Live Synced Azure DB
             </button>
           </div>
+
+          {/* Visual Graphs Toggle */}
+          <button
+            type="button"
+            onClick={() => setShowCharts(!showCharts)}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-semibold border transition-colors ${
+              showCharts
+                ? 'bg-sky-50 text-sky-800 border-sky-300 shadow-2xs'
+                : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+            }`}
+          >
+            <BarChart3 className="w-3.5 h-3.5 text-sky-600" />
+            <span>{showCharts ? '11 Excel Graphs (Visible)' : 'Show Graphs'}</span>
+          </button>
         </div>
 
         <div className="flex items-center gap-2">
@@ -335,7 +493,74 @@ export const DashboardSheet: React.FC<DashboardSheetProps> = ({
             </div>
           </div>
 
-          {/* Row 21 to 31: Developer Scorecard & Module Quality */}
+          {/* =========================================================================
+              CHARTS 1 & 2: BUG STATUS & BUG SEVERITY GRAPHS (From Excel xl/charts/chart1.xml & chart2.xml)
+              ========================================================================= */}
+          {showCharts && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+              {/* Chart 1: Bug Status (Donut / Pie) */}
+              <div className="border border-slate-200 rounded-lg p-3 bg-white shadow-2xs">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
+                  <div className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
+                    <PieIcon className="w-3.5 h-3.5 text-[#1b365d]" />
+                    <span>Chart 1: Bug Status Distribution (Excel: $A$15:$B$17)</span>
+                  </div>
+                  <span className="text-[10px] text-slate-400">Pie Chart</span>
+                </div>
+                <div className="h-56 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={bugStatusPieData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={45}
+                        outerRadius={75}
+                        paddingAngle={3}
+                        label={({ name, percent }: any) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
+                      >
+                        {bugStatusPieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value: any) => [`${value} Bugs`, 'Count']} />
+                      <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Chart 2: Bug Severity (Bar/Column) */}
+              <div className="border border-slate-200 rounded-lg p-3 bg-white shadow-2xs">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
+                  <div className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
+                    <BarChart3 className="w-3.5 h-3.5 text-[#1b365d]" />
+                    <span>Chart 2: Bug Severity (Excel: $D$15:$E$18)</span>
+                  </div>
+                  <span className="text-[10px] text-slate-400">Clustered Column</span>
+                </div>
+                <div className="h-56 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={severityBarData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                      <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                      <YAxis tick={{ fontSize: 11 }} />
+                      <Tooltip formatter={(value: any) => [`${value} Bugs`, 'Count']} />
+                      <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                        {severityBarData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Row 21 to 31: Developer Scorecard & Module Quality Tables */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
             {/* Left: Developer Scorecard (Cols A, B, C, D) */}
             <div className="border border-slate-300 bg-white">
@@ -411,6 +636,62 @@ export const DashboardSheet: React.FC<DashboardSheetProps> = ({
               </table>
             </div>
           </div>
+
+          {/* =========================================================================
+              CHARTS 3 & 4: DEVELOPER ACCURACY & MODULE QUALITY (Excel: chart3.xml & chart4.xml)
+              ========================================================================= */}
+          {showCharts && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+              {/* Chart 3: Developer Accuracy (Clustered Column) */}
+              <div className="border border-slate-200 rounded-lg p-3 bg-white shadow-2xs">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
+                  <div className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
+                    <BarChart3 className="w-3.5 h-3.5 text-[#1b365d]" />
+                    <span>Chart 3: Developer Accuracy % vs Fix Accuracy % (Excel: $A$22:$D$31)</span>
+                  </div>
+                  <span className="text-[10px] text-slate-400">Multi-Bar Series</span>
+                </div>
+                <div className="h-64 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={devScoreChartData} margin={{ top: 10, right: 10, left: -15, bottom: 25 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                      <XAxis dataKey="developer" angle={-25} textAnchor="end" tick={{ fontSize: 10 }} interval={0} />
+                      <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 10 }} />
+                      <Tooltip formatter={(value: any) => [`${value}%`]} />
+                      <Legend verticalAlign="top" height={30} iconType="rect" />
+                      <Bar dataKey="devAccuracy" name="Dev Accuracy %" fill="#1b365d" radius={[2, 2, 0, 0]} />
+                      <Bar dataKey="fixAccuracy" name="Fix Accuracy %" fill="#0284c7" radius={[2, 2, 0, 0]} />
+                      <Bar dataKey="finalScore" name="Final Score %" fill="#10b981" radius={[2, 2, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Chart 4: Module Progress & Quality (Clustered Column) */}
+              <div className="border border-slate-200 rounded-lg p-3 bg-white shadow-2xs">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
+                  <div className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
+                    <BarChart3 className="w-3.5 h-3.5 text-[#1b365d]" />
+                    <span>Chart 4: Module Progress &amp; Quality (Excel: $F$22:$H$25)</span>
+                  </div>
+                  <span className="text-[10px] text-slate-400">Progress vs Accuracy</span>
+                </div>
+                <div className="h-64 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={moduleQualityChartData} margin={{ top: 10, right: 10, left: -15, bottom: 10 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                      <XAxis dataKey="module" tick={{ fontSize: 11 }} />
+                      <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 10 }} />
+                      <Tooltip formatter={(value: any) => [`${value}%`]} />
+                      <Legend verticalAlign="top" height={30} iconType="rect" />
+                      <Bar dataKey="progress" name="Progress %" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="accuracy" name="Accuracy %" fill="#10b981" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* =========================================================================
@@ -541,6 +822,112 @@ export const DashboardSheet: React.FC<DashboardSheetProps> = ({
               </div>
             </div>
           </div>
+
+          {/* =========================================================================
+              CHARTS 5, 6, 7 & 8: DEPLOYMENT TIMELINE & QA STATUS CHARTS (Excel: chart5, 6, 7, 8)
+              ========================================================================= */}
+          {showCharts && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+              {/* Chart 5: Bugs Deployed by Date */}
+              <div className="border border-slate-200 rounded-lg p-3 bg-white shadow-2xs">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
+                  <div className="font-bold text-slate-800 text-xs truncate">
+                    Chart 5: Bugs Deployed by Date
+                  </div>
+                  <span className="text-[10px] text-slate-400">Column</span>
+                </div>
+                <div className="h-48 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={deploymentDatesData} margin={{ top: 5, right: 5, left: -25, bottom: 25 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                      <XAxis dataKey="date" angle={-45} textAnchor="end" tick={{ fontSize: 9 }} interval={1} />
+                      <YAxis tick={{ fontSize: 9 }} />
+                      <Tooltip formatter={(value: any) => [`${value} Bugs`, 'Bugs Deployed']} />
+                      <Bar dataKey="bugs" fill="#0284c7" radius={[2, 2, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Chart 6: Tasks Deployed by Date */}
+              <div className="border border-slate-200 rounded-lg p-3 bg-white shadow-2xs">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
+                  <div className="font-bold text-slate-800 text-xs truncate">
+                    Chart 6: Tasks Deployed by Date
+                  </div>
+                  <span className="text-[10px] text-slate-400">Column</span>
+                </div>
+                <div className="h-48 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={deploymentDatesData} margin={{ top: 5, right: 5, left: -25, bottom: 25 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                      <XAxis dataKey="date" angle={-45} textAnchor="end" tick={{ fontSize: 9 }} interval={1} />
+                      <YAxis tick={{ fontSize: 9 }} />
+                      <Tooltip formatter={(value: any) => [`${value} Tasks`, 'Tasks Deployed']} />
+                      <Bar dataKey="tasks" fill="#10b981" radius={[2, 2, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Chart 7: Bug QA Status (Donut) */}
+              <div className="border border-slate-200 rounded-lg p-3 bg-white shadow-2xs">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
+                  <div className="font-bold text-slate-800 text-xs truncate">
+                    Chart 7: Bug QA Status
+                  </div>
+                  <span className="text-[10px] text-slate-400">Pie</span>
+                </div>
+                <div className="h-48 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={bugQaStatusPieData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={30}
+                        outerRadius={55}
+                        paddingAngle={3}
+                      >
+                        {bugQaStatusPieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value: any) => [`${value} Bugs`, 'Count']} />
+                      <Legend verticalAlign="bottom" height={30} iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Chart 8: Bug Priority Distribution */}
+              <div className="border border-slate-200 rounded-lg p-3 bg-white shadow-2xs">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
+                  <div className="font-bold text-slate-800 text-xs truncate">
+                    Chart 8: Bug Priority (P1-P4)
+                  </div>
+                  <span className="text-[10px] text-slate-400">Column</span>
+                </div>
+                <div className="h-48 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={bugPriorityBarData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                      <XAxis dataKey="priority" tick={{ fontSize: 10 }} />
+                      <YAxis tick={{ fontSize: 10 }} />
+                      <Tooltip formatter={(value: any) => [`${value} Bugs`, 'Count']} />
+                      <Bar dataKey="count" radius={[3, 3, 0, 0]}>
+                        {bugPriorityBarData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* =========================================================================
@@ -648,6 +1035,38 @@ export const DashboardSheet: React.FC<DashboardSheetProps> = ({
             </div>
           </div>
 
+          {/* =========================================================================
+              CHART 9: DEVELOPMENT TEAM AGEING MATRIX (Excel: chart9.xml)
+              ========================================================================= */}
+          {showCharts && (
+            <div className="border border-slate-200 rounded-lg p-3 bg-white shadow-2xs mt-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
+                <div className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
+                  <Clock className="w-3.5 h-3.5 text-[#1b365d]" />
+                  <span>Chart 9: Development Team Ageing Matrix (Excel: $A$84:$H$90)</span>
+                </div>
+                <span className="text-[10px] text-slate-400">Stacked Horizontal Bar</span>
+              </div>
+              <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={devAgingData} layout="vertical" margin={{ top: 10, right: 20, left: 50, bottom: 10 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                    <XAxis type="number" tick={{ fontSize: 10 }} />
+                    <YAxis dataKey="developer" type="category" tick={{ fontSize: 10 }} />
+                    <Tooltip />
+                    <Legend verticalAlign="top" height={30} iconType="rect" wrapperStyle={{ fontSize: '10px' }} />
+                    <Bar dataKey="0-7 Days" stackId="a" fill={AGING_COLORS.d0_7} />
+                    <Bar dataKey="8-15 Days" stackId="a" fill={AGING_COLORS.d8_15} />
+                    <Bar dataKey="16-30 Days" stackId="a" fill={AGING_COLORS.d16_30} />
+                    <Bar dataKey="31-45 Days" stackId="a" fill={AGING_COLORS.d31_45} />
+                    <Bar dataKey="46-60 Days" stackId="a" fill={AGING_COLORS.d46_60} />
+                    <Bar dataKey="60+ Days" stackId="a" fill={AGING_COLORS.d60_plus} radius={[0, 3, 3, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+
           {/* Table 2: Module Ageing Matrix (Dev Pending Bugs Only) (Row 94) */}
           <div className="border border-slate-300 bg-white mt-4">
             <div className="bg-slate-100 px-3 py-1.5 font-bold text-xs text-slate-800 border-b border-slate-300">
@@ -728,56 +1147,248 @@ export const DashboardSheet: React.FC<DashboardSheetProps> = ({
             </div>
           </div>
 
-          {/* Table 3: Bugs Category (Dev Pending Bugs Only) (Row 103) */}
-          <div className="border border-slate-300 bg-white mt-4 max-w-xl">
-            <div className="bg-slate-100 px-3 py-1.5 font-bold text-xs text-slate-800 border-b border-slate-300">
-              Bugs Category (Dev Pending Bugs Only)
-            </div>
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-[#2b5b84] text-white font-bold text-xs uppercase">
-                  <th className="py-1.5 px-3 border border-[#2b5b84]">Module</th>
-                  <th className="py-1.5 px-3 border border-[#2b5b84] text-center">UI Bugs</th>
-                  <th className="py-1.5 px-3 border border-[#2b5b84] text-center">Functional Bugs</th>
-                  <th className="py-1.5 px-3 border border-[#2b5b84] text-center">Total Bugs</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.bugsCategory.rows.map((row, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-1.5 px-3 border border-slate-300 font-medium text-slate-900">
-                      {row.module}
+          {/* Table 3: Bugs Category (Dev Pending Bugs Only) (Row 103) & Charts 10 and 11 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+            {/* Table 3 */}
+            <div className="border border-slate-300 bg-white">
+              <div className="bg-slate-100 px-3 py-1.5 font-bold text-xs text-slate-800 border-b border-slate-300">
+                Bugs Category (Dev Pending Bugs Only)
+              </div>
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[#2b5b84] text-white font-bold text-xs uppercase">
+                    <th className="py-1.5 px-3 border border-[#2b5b84]">Module</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84] text-center">UI Bugs</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84] text-center">Functional Bugs</th>
+                    <th className="py-1.5 px-3 border border-[#2b5b84] text-center">Total Bugs</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.bugsCategory.rows.map((row, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-1.5 px-3 border border-slate-300 font-medium text-slate-900">
+                        {row.module}
+                      </td>
+                      <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-800">
+                        {row.uiBugs}
+                      </td>
+                      <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-800">
+                        {row.functionalBugs}
+                      </td>
+                      <td className="py-1.5 px-3 border border-slate-300 font-mono font-bold text-center text-slate-900">
+                        {row.totalBugs}
+                      </td>
+                    </tr>
+                  ))}
+                  {/* Total Row (Row 110) */}
+                  <tr className="bg-slate-100 font-bold border-t-2 border-slate-400">
+                    <td className="py-1.5 px-3 border border-slate-300 text-slate-900">
+                      Total
                     </td>
-                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-800">
-                      {row.uiBugs}
+                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-900">
+                      {data.bugsCategory.total.uiBugs}
                     </td>
-                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-800">
-                      {row.functionalBugs}
+                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-900">
+                      {data.bugsCategory.total.functionalBugs}
                     </td>
-                    <td className="py-1.5 px-3 border border-slate-300 font-mono font-bold text-center text-slate-900">
-                      {row.totalBugs}
+                    <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-900">
+                      {data.bugsCategory.total.totalBugs}
                     </td>
                   </tr>
-                ))}
-                {/* Total Row (Row 110) */}
-                <tr className="bg-slate-100 font-bold border-t-2 border-slate-400">
-                  <td className="py-1.5 px-3 border border-slate-300 text-slate-900">
-                    Total
-                  </td>
-                  <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-900">
-                    {data.bugsCategory.total.uiBugs}
-                  </td>
-                  <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-900">
-                    {data.bugsCategory.total.functionalBugs}
-                  </td>
-                  <td className="py-1.5 px-3 border border-slate-300 font-mono text-center text-slate-900">
-                    {data.bugsCategory.total.totalBugs}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Chart 11: UI vs Functional Bugs by Module (Excel: chart11.xml) */}
+            {showCharts && (
+              <div className="border border-slate-200 rounded-lg p-3 bg-white shadow-2xs">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
+                  <div className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
+                    <Layers className="w-3.5 h-3.5 text-[#1b365d]" />
+                    <span>Chart 11: UI vs Functional Bugs by Module (Excel: $A$106:$D$110)</span>
+                  </div>
+                  <span className="text-[10px] text-slate-400">Clustered Column</span>
+                </div>
+                <div className="h-52 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={uiVsFunctionalData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                      <XAxis dataKey="module" tick={{ fontSize: 10 }} />
+                      <YAxis tick={{ fontSize: 10 }} />
+                      <Tooltip />
+                      <Legend verticalAlign="top" height={25} iconType="rect" wrapperStyle={{ fontSize: '10px' }} />
+                      <Bar dataKey="UI Bugs" fill="#8b5cf6" radius={[2, 2, 0, 0]} />
+                      <Bar dataKey="Functional Bugs" fill="#0284c7" radius={[2, 2, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
           </div>
 
+          {/* Chart 10: Module Ageing Matrix (Excel: chart10.xml) */}
+          {showCharts && (
+            <div className="border border-slate-200 rounded-lg p-3 bg-white shadow-2xs mt-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
+                <div className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
+                  <Clock className="w-3.5 h-3.5 text-[#3b703e]" />
+                  <span>Chart 10: Module Ageing Matrix (Excel: $B$96:$H$101)</span>
+                </div>
+                <span className="text-[10px] text-slate-400">Stacked Column</span>
+              </div>
+              <div className="h-56 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={moduleAgingData} margin={{ top: 10, right: 10, left: -15, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="module" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 10 }} />
+                    <Tooltip />
+                    <Legend verticalAlign="top" height={30} iconType="rect" wrapperStyle={{ fontSize: '10px' }} />
+                    <Bar dataKey="0-7 Days" stackId="b" fill={AGING_COLORS.d0_7} />
+                    <Bar dataKey="8-15 Days" stackId="b" fill={AGING_COLORS.d8_15} />
+                    <Bar dataKey="16-30 Days" stackId="b" fill={AGING_COLORS.d16_30} />
+                    <Bar dataKey="31-45 Days" stackId="b" fill={AGING_COLORS.d31_45} />
+                    <Bar dataKey="46-60 Days" stackId="b" fill={AGING_COLORS.d46_60} />
+                    <Bar dataKey="60+ Days" stackId="b" fill={AGING_COLORS.d60_plus} radius={[3, 3, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+
+        </div>
+
+        {/* =========================================================================
+            SECTION 4: DAILY BUG INFLOW/OUTFLOW TIMELINE & RELEASE HIGHLIGHTS (Rows 135-209)
+            ========================================================================= */}
+        <div className="pt-4 border-t-2 border-slate-300">
+          <div className="bg-[#1b365d] text-white py-2 px-4 text-center font-bold tracking-wider text-sm sm:text-base uppercase border border-[#1b365d]">
+            DAILY BUG INFLOW &amp; OUTFLOW TIMELINE &amp; RELEASE STATS (Rows 135–209)
+          </div>
+
+          {/* KPI Highlights Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-3">
+            <div className="bg-slate-50 border border-slate-200 rounded p-3">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-semibold">
+                <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
+                <span>P1 Critical Issues</span>
+              </div>
+              <div className="flex items-baseline gap-2 mt-1.5">
+                <span className="font-mono text-xl font-bold text-slate-900">{data.p1Issues?.totalBugs || 169}</span>
+                <span className="text-[11px] text-slate-500">Total P1</span>
+              </div>
+              <div className="flex items-center justify-between text-[11px] mt-2 pt-2 border-t border-slate-200 font-mono">
+                <span className="text-emerald-700 font-semibold">{data.p1Issues?.fixed || 154} Fixed</span>
+                <span className="text-rose-700 font-semibold">{data.p1Issues?.pending || 15} Pending</span>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 border border-slate-200 rounded p-3">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-semibold">
+                <Activity className="w-3.5 h-3.5 text-sky-600" />
+                <span>15th Oct Release</span>
+              </div>
+              <div className="flex items-baseline gap-2 mt-1.5">
+                <span className="font-mono text-xl font-bold text-slate-900">{data.oct15Release?.totalBugs || 60}</span>
+                <span className="text-[11px] text-slate-500">Release Bugs</span>
+              </div>
+              <div className="flex items-center justify-between text-[11px] mt-2 pt-2 border-t border-slate-200 font-mono">
+                <span className="text-emerald-700 font-semibold">{data.oct15Release?.closed || 47} Closed</span>
+                <span className="text-amber-700 font-semibold">{data.oct15Release?.reopened || 7} Reopened</span>
+                <span className="text-rose-700 font-semibold">{data.oct15Release?.pending || 6} Pending</span>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 border border-slate-200 rounded p-3">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-semibold">
+                <Clock className="w-3.5 h-3.5 text-amber-600" />
+                <span>Pending from QA</span>
+              </div>
+              <div className="flex items-baseline gap-2 mt-1.5">
+                <span className="font-mono text-xl font-bold text-amber-700">{data.quickStats?.pendingFromQa || 131}</span>
+                <span className="text-[11px] text-slate-500">Bugs in QA queue</span>
+              </div>
+              <div className="text-[10px] text-slate-500 mt-2 pt-2 border-t border-slate-200">
+                Awaiting validation after developer deployment
+              </div>
+            </div>
+
+            <div className="bg-slate-50 border border-slate-200 rounded p-3">
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-semibold">
+                <TrendingUp className="w-3.5 h-3.5 text-indigo-600" />
+                <span>Pending from Dev</span>
+              </div>
+              <div className="flex items-baseline gap-2 mt-1.5">
+                <span className="font-mono text-xl font-bold text-indigo-700">{data.quickStats?.pendingFromDev || 108}</span>
+                <span className="text-[11px] text-slate-500">Bugs in Dev queue</span>
+              </div>
+              <div className="text-[10px] text-slate-500 mt-2 pt-2 border-t border-slate-200">
+                Active &amp; committed bugs currently under fix
+              </div>
+            </div>
+          </div>
+
+          {/* Daily Inflow & Outflow Trend Area Chart */}
+          {dailyTimelineData.length > 0 && (
+            <div className="border border-slate-200 rounded-lg p-3 bg-white shadow-2xs mt-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
+                <div className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
+                  <TrendingUp className="w-3.5 h-3.5 text-[#1b365d]" />
+                  <span>Daily Inflow &amp; Outflow Trend (July 14 – Oct 21)</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowDailyTable(!showDailyTable)}
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-700 hover:text-sky-900"
+                >
+                  <span>{showDailyTable ? 'Hide Daily Table' : 'Show 73-Day Log Table'}</span>
+                  {showDailyTable ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+              <div className="h-60 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={dailyTimelineData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="date" tick={{ fontSize: 9 }} interval={5} />
+                    <YAxis tick={{ fontSize: 10 }} />
+                    <Tooltip />
+                    <Legend verticalAlign="top" height={30} iconType="rect" wrapperStyle={{ fontSize: '10px' }} />
+                    <Area type="monotone" dataKey="raised" name="Raised Bugs" stroke="#0284c7" fill="#e0f2fe" fillOpacity={0.6} />
+                    <Area type="monotone" dataKey="closed" name="Closed Bugs" stroke="#10b981" fill="#d1fae5" fillOpacity={0.6} />
+                    <Area type="monotone" dataKey="pending" name="Pending Bugs" stroke="#f59e0b" fill="#fef3c7" fillOpacity={0.4} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Collapsible Daily Table */}
+              {showDailyTable && (
+                <div className="mt-4 border border-slate-200 rounded overflow-x-auto max-h-72">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead className="sticky top-0 bg-[#2b5b84] text-white">
+                      <tr>
+                        <th className="py-1.5 px-3">Date</th>
+                        <th className="py-1.5 px-3 text-right">Raised Bugs</th>
+                        <th className="py-1.5 px-3 text-right">Re-Opened</th>
+                        <th className="py-1.5 px-3 text-right">Closed Bugs</th>
+                        <th className="py-1.5 px-3 text-right">Pending Bugs</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(data.dailyTimeline || []).map((row, i) => (
+                        <tr key={i} className="hover:bg-slate-50 border-b border-slate-200">
+                          <td className="py-1 px-3 font-mono font-medium">{row.date}</td>
+                          <td className="py-1 px-3 font-mono text-right text-sky-800">{row.raised}</td>
+                          <td className="py-1 px-3 font-mono text-right text-rose-700">{row.reopened}</td>
+                          <td className="py-1 px-3 font-mono text-right text-emerald-700">{row.closed}</td>
+                          <td className="py-1 px-3 font-mono text-right text-amber-700 font-bold">{row.pending}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
       </div>

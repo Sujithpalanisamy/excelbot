@@ -7,8 +7,19 @@ import {
   Search, 
   Loader2,
   Filter,
-  ExternalLink
+  ExternalLink,
+  BarChart3
 } from 'lucide-react';
+import { 
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Cell,
+  CartesianGrid
+} from 'recharts';
 import type { BugAgingData } from '../types';
 import { api } from '../services/api';
 
@@ -177,6 +188,44 @@ export const BugAgingSheet: React.FC<BugAgingSheetProps> = ({
             </div>
           </button>
         ))}
+      </div>
+
+      {/* Aging Bucket Distribution Chart */}
+      <div className="bg-white border border-slate-300 rounded p-4 shadow-2xs">
+        <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-[#1b365d]" />
+            <span className="font-bold text-slate-800 text-xs">Defect Aging Bucket Distribution</span>
+          </div>
+          <span className="text-[10px] text-slate-500">Days Open from Date Raised</span>
+        </div>
+        <div className="h-48 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart 
+              data={[
+                { bucket: '0-7 Days', count: data.bucketCounts['0-7 Days'], fill: '#10b981' },
+                { bucket: '8-15 Days', count: data.bucketCounts['8-15 Days'], fill: '#84cc16' },
+                { bucket: '16-30 Days', count: data.bucketCounts['16-30 Days'], fill: '#eab308' },
+                { bucket: '31-45 Days', count: data.bucketCounts['31-45 Days'], fill: '#f97316' },
+                { bucket: '46-60 Days', count: data.bucketCounts['46-60 Days'], fill: '#ef4444' },
+                { bucket: '60+ Days', count: data.bucketCounts['60+ Days'], fill: '#991b1b' },
+              ]}
+              margin={{ top: 10, right: 10, left: -15, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis dataKey="bucket" tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} />
+              <Tooltip formatter={(value: any) => [`${value} Bugs`, 'Unresolved']} />
+              <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                {[
+                  '#10b981', '#84cc16', '#eab308', '#f97316', '#ef4444', '#991b1b'
+                ].map((color, i) => (
+                  <Cell key={`cell-${i}`} fill={color} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       {/* Filter and Search Bar */}

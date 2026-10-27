@@ -108,23 +108,38 @@ export class TrackerService {
   }
 
   public findWorkbookPath(): string {
+    // 1. Explicitly configured file if exists
     if (config.EXCEL_FILE_NAME) {
       const configured = path.isAbsolute(config.EXCEL_FILE_NAME)
         ? config.EXCEL_FILE_NAME
         : path.join(this.workspaceRoot, config.EXCEL_FILE_NAME);
-      if (fs.existsSync(configured) && !this.isFileLocked(configured)) return configured;
       if (fs.existsSync(configured)) return configured;
     }
 
-    const pOrig = path.join(this.workspaceRoot, 'Development_QA_Accuracy_Tracker_Automated_UPDATED (2).xlsx');
-    const pCopy = path.join(this.workspaceRoot, 'Development_QA_Accuracy_Tracker_Automated_UPDATED (2) - Copy.xlsx');
+    // 2. Dynamically scan workspace root for latest Development_QA_Accuracy_Tracker_Automated*.xlsx
+    try {
+      const files = fs.readdirSync(this.workspaceRoot);
+      const matches = files
+        .filter(f => f.startsWith('Development_QA_Accuracy_Tracker_Automated') && f.endsWith('.xlsx') && !f.includes('~$'))
+        .map(f => {
+          const fullPath = path.join(this.workspaceRoot, f);
+          const stat = fs.statSync(fullPath);
+          return { fullPath, mtime: stat.mtimeMs, name: f };
+        })
+        .sort((a, b) => b.mtime - a.mtime);
 
-    if (fs.existsSync(pOrig) && !this.isFileLocked(pOrig)) return pOrig;
-    if (fs.existsSync(pCopy) && !this.isFileLocked(pCopy)) return pCopy;
-    if (fs.existsSync(pOrig)) return pOrig;
-    if (fs.existsSync(pCopy)) return pCopy;
+      const unlocked = matches.find(m => !this.isFileLocked(m.fullPath));
+      if (unlocked) return unlocked.fullPath;
+      if (matches.length > 0) return matches[0].fullPath;
+    } catch {
+      // ignore
+    }
 
+    // 3. Fallbacks
     const candidates = [
+      path.join(this.workspaceRoot, 'Development_QA_Accuracy_Tracker_Automated_UPDATED (4) (6) (1).xlsx'),
+      path.join(this.workspaceRoot, 'Development_QA_Accuracy_Tracker_Automated_UPDATED (2).xlsx'),
+      path.join(this.workspaceRoot, 'Development_QA_Accuracy_Tracker_Automated_UPDATED (2) - Copy.xlsx'),
       path.join(this.workspaceRoot, 'output', 'Development_QA_Accuracy_Tracker_Automated_UPDATED (2) - Copy.xlsx'),
       path.join(this.workspaceRoot, 'output', 'Development_QA_Accuracy_Tracker_Automated_UPDATED (2).xlsx'),
     ];
@@ -133,8 +148,7 @@ export class TrackerService {
     }
 
     throw new Error(
-      `QA Tracker workbook not found in workspace: ${this.workspaceRoot}. ` +
-      `Expected 'Development_QA_Accuracy_Tracker_Automated_UPDATED (2) - Copy.xlsx' or 'Development_QA_Accuracy_Tracker_Automated_UPDATED (2).xlsx'.`
+      `QA Tracker workbook not found in workspace: ${this.workspaceRoot}.`
     );
   }
 

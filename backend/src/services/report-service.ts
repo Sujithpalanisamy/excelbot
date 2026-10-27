@@ -8,6 +8,24 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const phase5DataPath = path.join(__dirname, '..', 'data', 'phase5-data.json');
 const phase6DataPath = path.join(__dirname, '..', 'data', 'phase6-data.json');
+const dashboardExtraDataPath = path.join(__dirname, '..', 'data', 'dashboard-extra.json');
+
+let dashboardExtraCache: any = null;
+function getDashboardExtraData() {
+  if (!dashboardExtraCache) {
+    if (fs.existsSync(dashboardExtraDataPath)) {
+      try {
+        dashboardExtraCache = JSON.parse(fs.readFileSync(dashboardExtraDataPath, 'utf-8'));
+      } catch (err) {
+        console.error('Error reading dashboard-extra.json:', err);
+        dashboardExtraCache = { dailyTimeline: [], p1Issues: {}, oct15Release: {}, quickStats: {} };
+      }
+    } else {
+      dashboardExtraCache = { dailyTimeline: [], p1Issues: {}, oct15Release: {}, quickStats: {} };
+    }
+  }
+  return dashboardExtraCache;
+}
 
 let phase5Cache: any = null;
 function getPhase5Data() {
@@ -17,10 +35,10 @@ function getPhase5Data() {
         phase5Cache = JSON.parse(fs.readFileSync(phase5DataPath, 'utf-8'));
       } catch (err) {
         console.error('Error reading phase5-data.json:', err);
-        phase5Cache = { pageTracker: [], deploymentTracker: [], deploymentHistory: [], priorityTasks: [], cr: [], feedback: [] };
+        phase5Cache = { pageTracker: [], deploymentTracker: [], deploymentHistory: [], priorityTasks: [], cr: [], feedback: [], reports: [] };
       }
     } else {
-      phase5Cache = { pageTracker: [], deploymentTracker: [], deploymentHistory: [], priorityTasks: [], cr: [], feedback: [] };
+      phase5Cache = { pageTracker: [], deploymentTracker: [], deploymentHistory: [], priorityTasks: [], cr: [], feedback: [], reports: [] };
     }
   }
   return phase5Cache;
@@ -334,7 +352,11 @@ export function getDashboardExcelData() {
         { module: 'attendance', uiBugs: 1, functionalBugs: 1, totalBugs: 2 }
       ],
       total: { uiBugs: 25, functionalBugs: 31, totalBugs: 56 }
-    }
+    },
+    dailyTimeline: getDashboardExtraData().dailyTimeline || [],
+    p1Issues: getDashboardExtraData().p1Issues || { totalBugs: 169, fixed: 154, pending: 15 },
+    oct15Release: getDashboardExtraData().oct15Release || { totalBugs: 60, closed: 47, reopened: 7, pending: 6 },
+    quickStats: getDashboardExtraData().quickStats || { yesterday: 5, pendingFromQa: 131, pendingFromDev: 108 }
   };
 }
 
@@ -1394,6 +1416,13 @@ export function getMappingData() {
   return data.mapping || {};
 }
 
-
-
-
+export function getReportsCatalogData() {
+  const data = getPhase5Data();
+  const reports = data.reports || [];
+  const modules = Array.from(new Set(reports.map((r: any) => r.module))).filter(Boolean);
+  return {
+    totalReports: reports.length,
+    modules,
+    reports
+  };
+}

@@ -5,8 +5,19 @@ import {
   Printer, 
   UserCheck, 
   Loader2,
-  Code2
+  Code2,
+  BarChart3
 } from 'lucide-react';
+import { 
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  CartesianGrid
+} from 'recharts';
 import type { DeveloperScorecardData } from '../types';
 import { api } from '../services/api';
 
@@ -152,6 +163,36 @@ export const DeveloperScorecardSheet: React.FC<DeveloperScorecardSheetProps> = (
           <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Overall Final Score</div>
           <div className="text-xl font-bold text-[#1b365d] mt-1">{data.total.finalScore}</div>
           <div className="text-[10px] text-slate-500 mt-0.5">70% Dev + 30% Fix</div>
+        </div>
+      </div>
+
+      {/* Developer Accuracy & Fix Quality Comparison Chart */}
+      <div className="bg-white border border-slate-300 rounded p-4 shadow-2xs">
+        <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-[#1b365d]" />
+            <span className="font-bold text-slate-800 text-xs">Developer Accuracy % &amp; Fix Quality Comparison</span>
+          </div>
+          <span className="text-[10px] text-slate-500">Auto-calculated from Page &amp; Bug Trackers</span>
+        </div>
+        <div className="h-60 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data.rows.map(r => ({
+              developer: r.developer,
+              devAccuracy: parseFloat(r.developmentAccuracy) || 0,
+              fixAccuracy: parseFloat(r.fixAccuracy) || 0,
+              finalScore: parseFloat(r.finalScore) || 0
+            }))} margin={{ top: 10, right: 10, left: -15, bottom: 25 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis dataKey="developer" angle={-25} textAnchor="end" tick={{ fontSize: 10 }} interval={0} />
+              <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 10 }} />
+              <Tooltip formatter={(value: any) => [`${value}%`]} />
+              <Legend verticalAlign="top" height={30} iconType="rect" />
+              <Bar dataKey="devAccuracy" name="Dev Accuracy %" fill="#1b365d" radius={[2, 2, 0, 0]} />
+              <Bar dataKey="fixAccuracy" name="Fix Accuracy %" fill="#0284c7" radius={[2, 2, 0, 0]} />
+              <Bar dataKey="finalScore" name="Final Score %" fill="#10b981" radius={[2, 2, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 

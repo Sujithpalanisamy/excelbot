@@ -5,8 +5,19 @@ import {
   Printer, 
   CheckCircle, 
   Loader2,
-  ShieldCheck
+  ShieldCheck,
+  BarChart3
 } from 'lucide-react';
+import { 
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  CartesianGrid
+} from 'recharts';
 import type { QaScorecardData } from '../types';
 import { api } from '../services/api';
 
@@ -152,6 +163,37 @@ export const QaScorecardSheet: React.FC<QaScorecardSheetProps> = ({
           <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Overall QA Score</div>
           <div className="text-xl font-bold text-emerald-800 mt-1">{data.total.finalQaScore}</div>
           <div className="text-[10px] text-emerald-600 mt-0.5">Target &ge; 95%</div>
+        </div>
+      </div>
+
+      {/* QA Accuracy & Bug Detection Rate Chart */}
+      <div className="bg-white border border-slate-300 rounded p-4 shadow-2xs">
+        <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-[#1b365d]" />
+            <span className="font-bold text-slate-800 text-xs">QA Accuracy % &amp; Bug Detection Volume</span>
+          </div>
+          <span className="text-[10px] text-slate-500">Auto-calculated from QA Scorecard</span>
+        </div>
+        <div className="h-60 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data.rows.map(r => ({
+              qa: r.qa,
+              qaAccuracy: parseFloat(r.qaAccuracy) || 0,
+              bugsRaised: r.bugsRaised,
+              pagesTested: r.pagesTested
+            }))} margin={{ top: 10, right: 10, left: -15, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis dataKey="qa" tick={{ fontSize: 10 }} />
+              <YAxis yAxisId="left" domain={[0, 100]} unit="%" tick={{ fontSize: 10 }} />
+              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} />
+              <Tooltip />
+              <Legend verticalAlign="top" height={30} iconType="rect" />
+              <Bar yAxisId="left" dataKey="qaAccuracy" name="QA Accuracy %" fill="#10b981" radius={[3, 3, 0, 0]} />
+              <Bar yAxisId="right" dataKey="bugsRaised" name="Bugs Raised" fill="#1b365d" radius={[3, 3, 0, 0]} />
+              <Bar yAxisId="right" dataKey="pagesTested" name="Pages Tested" fill="#0284c7" radius={[3, 3, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 

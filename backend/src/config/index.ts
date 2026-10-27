@@ -62,7 +62,7 @@ export const config: AppConfig = {
   BACKEND_HOST: process.env.BACKEND_HOST || '127.0.0.1',
   BACKEND_PORT: parseInt(process.env.BACKEND_PORT || '8000', 10),
   EXCEL_OUTPUT_DIR: process.env.EXCEL_OUTPUT_DIR ? path.resolve(workspaceRoot, process.env.EXCEL_OUTPUT_DIR) : path.join(workspaceRoot, 'output'),
-  EXCEL_FILE_NAME: process.env.EXCEL_FILE_NAME || 'Development_QA_Accuracy_Tracker_Automated_UPDATED (2) - Copy.xlsx',
+  EXCEL_FILE_NAME: process.env.EXCEL_FILE_NAME || 'Development_QA_Accuracy_Tracker_Automated_UPDATED (4) (6) (1).xlsx',
   DATABASE_URL: resolveDatabasePath(),
   AI_ENABLED: (process.env.AI_ENABLED || 'false').toLowerCase() === 'true',
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',

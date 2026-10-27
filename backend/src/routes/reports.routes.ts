@@ -25,12 +25,22 @@ import {
   getListsData,
   getInstructionsData,
   getMiscData,
-  getMappingData
+  getMappingData,
+  getReportsCatalogData
 } from '../services/report-service.js';
 import { getAllBugs } from '../database/index.js';
 import { excelService } from '../integrations/excel/excel-service.js';
 
 export const reportsRouter = Router();
+
+reportsRouter.get('/catalog', (req, res, next) => {
+  try {
+    const data = getReportsCatalogData();
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
 
 reportsRouter.get('/lists', (req, res, next) => {
   try {
