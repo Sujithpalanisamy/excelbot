@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Navbar } from './components/Navbar';
 import { MetricsOverview } from './components/MetricsOverview';
-import { BugInputPanel } from './components/BugInputPanel';
 import { BugTable } from './components/BugTable';
 import { BugDetailsModal } from './components/BugDetailsModal';
-import { ChatPanel } from './components/ChatPanel';
 import { ReportModal } from './components/ReportModal';
 import { SettingsModal } from './components/SettingsModal';
 import { SheetTabs } from './components/SheetTabs';
@@ -35,7 +33,7 @@ import { InstructionsSheet } from './components/InstructionsSheet';
 import { MiscSheet } from './components/MiscSheet';
 import { MappingSheet } from './components/MappingSheet';
 import { AlertTriangle } from 'lucide-react';
-import type { BugItem, SettingsStatusResponse, SummaryDetail, ChatMessage, SettingsUpdateRequest } from './types';
+import type { BugItem, SettingsStatusResponse, SummaryDetail, SettingsUpdateRequest } from './types';
 import { ALL_27_SHEETS } from './types';
 import { api } from './services/api';
 
@@ -53,11 +51,9 @@ export const App: React.FC = () => {
   const [isReportOpen, setIsReportOpen] = useState(false);
   
   // Loading indicators
-  const [isLoading, setIsLoading] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoadingSummary, setIsLoadingSummary] = useState(false);
-  const [isChatLoading, setIsChatLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSyncInfo, setLastSyncInfo] = useState('');
 
@@ -71,9 +67,6 @@ export const App: React.FC = () => {
   const [selectedReporter, setSelectedReporter] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [activeMetricFilter, setActiveMetricFilter] = useState('all');
-
-  // Chat messages
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
   // Load bugs & settings
   const loadData = useCallback(async () => {
@@ -116,31 +109,6 @@ export const App: React.FC = () => {
   useEffect(() => {
     loadData();
   }, [loadData]);
-
-  // Fetch single bug handler
-  const handleFetchSingle = async (bugId: number) => {
-    setIsLoading(true);
-    try {
-      const res = await api.fetchSingleBug(bugId);
-      if (res.bug) {
-        // Refresh list
-        await loadData();
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Fetch bulk bugs handler
-  const handleFetchBulk = async (inputText: string) => {
-    setIsLoading(true);
-    try {
-      await api.fetchBulkBugs(inputText);
-      await loadData();
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Sync Now handler (Fetches all bugs pin-to-pin, end-to-end)
   const handleSyncNow = async () => {
@@ -241,64 +209,6 @@ export const App: React.FC = () => {
   const handleSaveSettings = async (updated: SettingsUpdateRequest) => {
     await api.updateSettings(updated);
     await loadData();
-  };
-
-  // Chat message handler
-  const handleSendChatMessage = async (msgText: string) => {
-    const userMsg: ChatMessage = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: msgText,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-    setChatMessages(prev => [...prev, userMsg]);
-    setIsChatLoading(true);
-
-    try {
-      const response = await api.sendChatMessage(msgText);
-      const botMsg: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: response.reply,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        action_type: response.action_type,
-        data: response.data
-      };
-      setChatMessages(prev => [...prev, botMsg]);
-
-      // If an action changed data, refresh bugs
-      if (['FETCH_BUG', 'BULK_FETCH', 'SUMMARIZE'].includes(response.action_type || '')) {
-        await loadData();
-      }
-      if (response.action_type === 'PAGE_REPORT' && response.data?.page_name) {
-        setSelectedPage(response.data.page_name);
-      }
-      if (response.action_type === 'SHOW_BUGS' && response.data?.filter === 'critical') {
-        setSelectedSeverity('1 - Critical');
-      }
-      if (response.action_type === 'SHOW_BUGS' && response.data?.filter === 'open') {
-        setSelectedState('New');
-      }
-    } catch (err: any) {
-      const isNetworkError = (err?.message || '').toLowerCase().includes('failed to fetch') || err?.name === 'TypeError';
-      const content = isNetworkError
-        ? '⚠️ Cannot reach the backend server (http://127.0.0.1:8000). Please start the backend service using `start_demo.bat` or `npm run dev`.'
-        : `Error: ${err.message || 'Unable to connect to assistant.'}`;
-      const errMsg: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setChatMessages(prev => [...prev, errMsg]);
-    } finally {
-
-      setIsChatLoading(false);
-    }
-  };
-
-  const handleClearChat = () => {
-    setChatMessages([]);
   };
 
   // Reset filters
@@ -443,26 +353,6 @@ export const App: React.FC = () => {
               bugs={bugs}
               activeFilter={activeMetricFilter}
               onSelectFilter={(f) => setActiveMetricFilter(f)}
-            />
-
-            {/* Bug Input & Actions Hub */}
-            <BugInputPanel
-              onFetchSingle={handleFetchSingle}
-              onFetchBulk={handleFetchBulk}
-              onExportExcel={handleExportExcel}
-              onOpenPageReport={() => setIsReportOpen(true)}
-              onSyncNow={handleSyncNow}
-              isSyncing={isSyncing}
-              lastSyncInfo={lastSyncInfo}
-              isLoading={isLoading}
-            />
-
-            {/* Chatbot Panel */}
-            <ChatPanel
-              messages={chatMessages}
-              onSendMessage={handleSendChatMessage}
-              onClearHistory={handleClearChat}
-              isLoading={isChatLoading}
             />
 
             {/* Work Items Table - Sheet 1: All Bugs */}
