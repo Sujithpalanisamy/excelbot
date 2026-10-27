@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-Download, 
-  Printer, 
-  Layout, 
-  Cpu, 
+  Download,
+  Printer,
+  Layout,
+  Cpu,
   Loader2,
   PieChart,
   BarChart3

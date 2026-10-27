@@ -1,7 +1,7 @@
 import React from 'react';
-import { 
-  Settings, 
-  FileSpreadsheet, 
+import {
+  Settings,
+  FileSpreadsheet,
   RefreshCw,
   Layers
 } from 'lucide-react';

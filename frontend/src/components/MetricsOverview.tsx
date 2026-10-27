@@ -1,10 +1,10 @@
 import React from 'react';
-import { 
-  Bug, 
-  Activity, 
-  CheckCircle2, 
-  Clock, 
-  AlertTriangle 
+import {
+  Bug,
+  Activity,
+  CheckCircle2,
+  Clock,
+  AlertTriangle
 } from 'lucide-react';
 import type { BugItem } from '../types';
 

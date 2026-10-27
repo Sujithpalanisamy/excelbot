@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Download, 
-  Printer, 
+import {
+  Download,
+  Printer,
   FileSpreadsheet,
   Loader2,
   PieChart as PieIcon,

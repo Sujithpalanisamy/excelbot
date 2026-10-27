@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import {
-Download, 
-  Printer, 
-  RotateCcw, 
-  ShieldAlert, 
-  CheckCircle2, 
+  Download,
+  Printer,
+  RotateCcw,
+  ShieldAlert,
+  CheckCircle2,
   AlertTriangle,
   Loader2,
   BarChart3

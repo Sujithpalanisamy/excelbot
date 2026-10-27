@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Download, 
-  Printer, 
-  UserCheck, 
+import {
+  Download,
+  Printer,
+  UserCheck,
   Loader2,
   Code2,
   BarChart3

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { 
-  Search, 
-  DownloadCloud, 
-  CheckCircle2, 
-  AlertCircle, 
+import {
+  Search,
+  DownloadCloud,
+  CheckCircle2,
+  AlertCircle,
   X,
   Loader2
 } from 'lucide-react';

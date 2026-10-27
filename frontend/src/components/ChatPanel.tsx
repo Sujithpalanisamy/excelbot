@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Send, 
-  Bot, 
-  User, 
-  Trash2, 
-  ChevronDown, 
-  ChevronUp, 
+import {
+  Send,
+  Bot,
+  User,
+  Trash2,
+  ChevronDown,
+  ChevronUp,
   Loader2,
   ShieldCheck
 } from 'lucide-react';

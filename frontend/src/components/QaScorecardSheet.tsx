@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
-Download, 
-  Printer, 
-  CheckCircle, 
+  Download,
+  Printer,
+  CheckCircle,
   Loader2,
   ShieldCheck,
   BarChart3

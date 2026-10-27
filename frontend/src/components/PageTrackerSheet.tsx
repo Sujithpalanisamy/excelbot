@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-Download, 
-  Printer, 
-  Layers, 
-  Search, 
+  Download,
+  Printer,
+  Layers,
+  Search,
   Loader2,
   Filter
 } from 'lucide-react';

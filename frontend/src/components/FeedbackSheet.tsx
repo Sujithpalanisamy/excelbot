@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Download, 
-  Printer, 
-  MessageSquare, 
-  Search, 
+import {
+  Download,
+  Printer,
+  MessageSquare,
+  Search,
   Loader2,
   Users,
   Layers,

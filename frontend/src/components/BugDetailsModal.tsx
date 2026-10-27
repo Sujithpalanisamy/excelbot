@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { 
-  X, 
-  ExternalLink, 
-  ClipboardCheck, 
-  FileText, 
-  CheckSquare, 
-  ShieldAlert, 
+import {
+  X,
+  ExternalLink,
+  ClipboardCheck,
+  FileText,
+  CheckSquare,
+  ShieldAlert,
   RotateCcw,
   Loader2
 } from 'lucide-react';

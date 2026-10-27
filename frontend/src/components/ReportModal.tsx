@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { 
-  X, 
-  Layers, 
-  FileSpreadsheet, 
-  Download, 
-  CheckCircle2, 
+import {
+  X,
+  Layers,
+  FileSpreadsheet,
+  Download,
+  CheckCircle2,
   Loader2,
   ChevronDown
 } from 'lucide-react';

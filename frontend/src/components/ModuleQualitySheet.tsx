@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
-Download, 
-  Printer, 
-  Layers, 
+  Download,
+  Printer,
+  Layers,
   Loader2,
   Sliders,
   ShieldCheck,

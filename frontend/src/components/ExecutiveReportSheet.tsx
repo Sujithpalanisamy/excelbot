@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { 
-  FileText, 
-  Printer, 
-  Download, 
+import {
+  FileText,
+  Printer,
+  Download,
   Calendar,
   Search
 } from 'lucide-react';

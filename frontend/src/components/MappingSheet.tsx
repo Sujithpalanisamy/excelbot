@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-Download, 
-  Printer, 
-  GitFork, 
-  Search, 
+  Download,
+  Printer,
+  GitFork,
+  Search,
   Loader2,
   Users,
   Layers,
