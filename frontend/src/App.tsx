@@ -590,15 +590,7 @@ export const App: React.FC = () => {
             <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto leading-relaxed">
               {ALL_27_SHEETS.find(s => s.id === activeSheetId)?.description}
             </p>
-            <div className="p-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium mb-6 text-left space-y-1.5">
-              <div className="font-bold flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-amber-500" />
-                Step-by-Step Transition Plan:
-              </div>
-              <p>
-                <strong>100% Complete!</strong> All <strong>27 sheets</strong> of the Development & QA Accuracy Tracker are fully built, interactive, and connected to real-time calculations and drill-downs.
-              </p>
-            </div>
+
             <button
               type="button"
               onClick={() => setActiveSheetId(1)}

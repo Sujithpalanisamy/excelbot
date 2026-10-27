@@ -90,7 +90,7 @@ export const AzureImportSheet: React.FC<AzureImportSheetProps> = ({
       <div className="bg-white border border-slate-300 rounded p-12 text-center shadow-xs">
         <Loader2 className="w-8 h-8 animate-spin text-[#1b365d] mx-auto mb-3" />
         <h3 className="font-bold text-slate-800 text-sm">Loading Sheet 4: Azure Import...</h3>
-        <p className="text-xs text-slate-500 mt-1">Aggregating raw Azure DevOps work items and evaluating calculated columns H:P</p>
+        <p className="text-xs text-slate-500 mt-1">Loading live Azure DevOps work items and computed fields...</p>
       </div>
     );
   }

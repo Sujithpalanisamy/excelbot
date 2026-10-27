@@ -219,7 +219,7 @@ export const PriorityTasksSheet: React.FC<PriorityTasksSheetProps> = ({
             <span>PRIORITY TASKS MATRIX (TASKS: {filteredTasks.length})</span>
           </div>
           <span className="text-[11px] font-normal text-slate-300">
-            Critical delivery items from Excel Sheet 16
+            Critical delivery items and tracking status
           </span>
         </div>
 

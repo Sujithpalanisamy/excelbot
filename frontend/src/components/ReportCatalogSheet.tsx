@@ -100,7 +100,7 @@ export const ReportCatalogSheet: React.FC = () => {
               </span>
             </div>
             <p className="text-xs text-slate-500 font-sans mt-0.5">
-              Direct digital replacement for Sheet 21 of the Excel Tracker • Full catalog of all operational and compliance reports
+              Full catalog of all operational and compliance reports across HRMS modules
             </p>
           </div>
         </div>

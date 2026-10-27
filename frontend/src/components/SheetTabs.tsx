@@ -244,19 +244,9 @@ export const SheetTabs: React.FC<SheetTabsProps> = ({
               <h2 className="text-sm sm:text-base font-bold text-slate-900 font-display">
                 Sheet {activeSheet.id}: {activeSheet.name}
               </h2>
-              {activeSheet.id === 1 ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Live Sync Active ({totalBugsCount} Bugs)
-                </span>
-              ) : activeSheet.status === 'active' ? (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  Live Interactive Sheet
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
-                  Queued in Roadmap
+              {activeSheet.id === 1 && totalBugsCount > 0 && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                  {totalBugsCount} Bugs
                 </span>
               )}
             </div>
@@ -486,7 +476,7 @@ export const SheetTabs: React.FC<SheetTabsProps> = ({
             >
               {ALL_27_SHEETS.map((s) => (
                 <option key={s.id} value={s.id}>
-                  Sheet {s.id}: {s.name} {s.status === 'active' ? '★ (Live)' : ''}
+                  Sheet {s.id}: {s.name}
                 </option>
               ))}
             </select>
@@ -494,7 +484,7 @@ export const SheetTabs: React.FC<SheetTabsProps> = ({
         </div>
       </div>
 
-      {/* Horizontal Scrollable Excel Sheet Tabs Strip */}
+      {/* Horizontal Scrollable Sheet Tabs Strip */}
       <div className="flex items-center overflow-x-auto py-1 px-2 bg-slate-100 border-t border-slate-200 scrollbar-thin">
         <div className="flex items-center gap-1 min-w-max">
           {ALL_27_SHEETS.map((sheet) => {
@@ -517,9 +507,6 @@ export const SheetTabs: React.FC<SheetTabsProps> = ({
                   {icon}
                 </span>
                 <span>{sheet.id}. {sheet.name}</span>
-                {sheet.status === 'active' && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Interactive Sheet" />
-                )}
               </button>
             );
           })}

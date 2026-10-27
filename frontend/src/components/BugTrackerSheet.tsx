@@ -93,7 +93,7 @@ export const BugTrackerSheet: React.FC<BugTrackerSheetProps> = ({
       <div className="bg-white border border-slate-300 rounded p-12 text-center shadow-xs">
         <Loader2 className="w-8 h-8 animate-spin text-[#1b365d] mx-auto mb-3" />
         <h3 className="font-bold text-slate-800 text-sm">Loading Sheet 5: Bug Tracker...</h3>
-        <p className="text-xs text-slate-500 mt-1">Evaluating 34 Excel formulas and Status Reconciliation check against Azure DevOps</p>
+        <p className="text-xs text-slate-500 mt-1">Reconciling live bug statuses with Azure DevOps...</p>
       </div>
     );
   }
@@ -107,8 +107,8 @@ export const BugTrackerSheet: React.FC<BugTrackerSheetProps> = ({
             <FileSpreadsheet className="w-3.5 h-3.5" />
             Sheet 5: Bug Tracker
           </span>
-          <span className="font-mono text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-            {items.length} Master Tracker Records • Status Reconciliation Active
+          <span className="text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+            {items.length} Records
           </span>
         </div>
 

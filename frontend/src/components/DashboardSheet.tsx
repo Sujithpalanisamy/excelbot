@@ -81,7 +81,6 @@ export const DashboardSheet: React.FC<DashboardSheetProps> = ({
 }) => {
   const [data, setData] = useState<DashboardExcelData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'excel' | 'live'>('excel');
   const [asOfDate, setAsOfDate] = useState('26-Oct-2026');
   const [showCharts, setShowCharts] = useState(true);
   const [showDailyTable, setShowDailyTable] = useState(false);
@@ -168,8 +167,8 @@ export const DashboardSheet: React.FC<DashboardSheetProps> = ({
     return (
       <div className="bg-white border border-slate-300 rounded p-12 text-center shadow-xs">
         <Loader2 className="w-8 h-8 animate-spin text-[#1b365d] mx-auto mb-3" />
-        <h3 className="font-bold text-slate-800 text-sm">Rendering Exact Sheet 2 Dashboard & Visual Graphs...</h3>
-        <p className="text-xs text-slate-500 mt-1">Replicating Excel formulas, cell grids, charts and exact color palettes</p>
+        <h3 className="font-bold text-slate-800 text-sm">Loading Project & QA Quality Dashboard...</h3>
+        <p className="text-xs text-slate-500 mt-1">Aggregating live defect metrics, scorecard analytics, and release summaries</p>
       </div>
     );
   }
@@ -179,13 +178,13 @@ export const DashboardSheet: React.FC<DashboardSheetProps> = ({
     .filter(s => s.status !== 'Total')
     .map(s => ({
       name: s.status,
-      value: viewMode === 'live' && s.liveCount !== undefined ? s.liveCount : s.count,
+      value: s.liveCount !== undefined ? s.liveCount : s.count,
       color: STATUS_COLORS[s.status] || '#64748b'
     }));
 
   const severityBarData = data.severity.map(s => ({
     name: s.severity,
-    count: viewMode === 'live' && s.liveCount !== undefined ? s.liveCount : s.count,
+    count: s.liveCount !== undefined ? s.liveCount : s.count,
     fill: SEVERITY_COLORS[s.severity] || '#64748b'
   }));
 
@@ -266,35 +265,6 @@ export const DashboardSheet: React.FC<DashboardSheetProps> = ({
               <FileSpreadsheet className="w-3.5 h-3.5" />
               Sheet 2: Dashboard
             </span>
-            <span className="font-mono text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-              Excel Grid: A1:H110 &amp; 11 Charts
-            </span>
-          </div>
-
-          {/* View Mode Switcher */}
-          <div className="inline-flex items-center rounded border border-slate-300 p-0.5 bg-slate-100">
-            <button
-              type="button"
-              onClick={() => setViewMode('excel')}
-              className={`px-2.5 py-1 text-[11px] font-semibold rounded transition-colors ${
-                viewMode === 'excel'
-                  ? 'bg-white text-[#1b365d] shadow-2xs font-bold'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Excel Exact Baseline
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('live')}
-              className={`px-2.5 py-1 text-[11px] font-semibold rounded transition-colors ${
-                viewMode === 'live'
-                  ? 'bg-white text-[#1b365d] shadow-2xs font-bold'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Live Synced Azure DB
-            </button>
           </div>
 
           {/* Visual Graphs Toggle */}
@@ -308,7 +278,7 @@ export const DashboardSheet: React.FC<DashboardSheetProps> = ({
             }`}
           >
             <BarChart3 className="w-3.5 h-3.5 text-sky-600" />
-            <span>{showCharts ? '11 Excel Graphs (Visible)' : 'Show Graphs'}</span>
+            <span>{showCharts ? 'Visual Charts (Visible)' : 'Show Charts'}</span>
           </button>
         </div>
 
@@ -371,7 +341,7 @@ export const DashboardSheet: React.FC<DashboardSheetProps> = ({
                 </thead>
                 <tbody>
                   {data.projectKpis.map((kpi, idx) => {
-                    const displayVal = viewMode === 'live' && kpi.liveValue !== undefined ? kpi.liveValue : kpi.value;
+                    const displayVal = kpi.liveValue !== undefined ? kpi.liveValue : kpi.value;
                     return (
                       <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
                         <td className="py-1.5 px-3 border border-slate-300 bg-[#d9e1f2] font-semibold text-slate-900">
@@ -412,7 +382,7 @@ export const DashboardSheet: React.FC<DashboardSheetProps> = ({
                 </thead>
                 <tbody>
                   {data.qualityKpis.map((kpi, idx) => {
-                    const displayVal = viewMode === 'live' && kpi.liveValue !== undefined ? kpi.liveValue : kpi.value;
+                    const displayVal = kpi.liveValue !== undefined ? kpi.liveValue : kpi.value;
                     return (
                       <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
                         <td className="py-1.5 px-3 border border-slate-300 bg-[#d9e1f2] font-semibold text-slate-900">
@@ -445,7 +415,7 @@ export const DashboardSheet: React.FC<DashboardSheetProps> = ({
                 </thead>
                 <tbody>
                   {data.bugStatus.map((row, idx) => {
-                    const countVal = viewMode === 'live' && row.liveCount !== undefined ? row.liveCount : row.count;
+                    const countVal = row.liveCount !== undefined ? row.liveCount : row.count;
                     const isTotal = row.isTotal || row.status === 'Total';
                     return (
                       <tr 
@@ -476,7 +446,7 @@ export const DashboardSheet: React.FC<DashboardSheetProps> = ({
                 </thead>
                 <tbody>
                   {data.severity.map((row, idx) => {
-                    const countVal = viewMode === 'live' && row.liveCount !== undefined ? row.liveCount : row.count;
+                    const countVal = row.liveCount !== undefined ? row.liveCount : row.count;
                     return (
                       <tr key={idx} className="hover:bg-slate-50 transition-colors">
                         <td className="py-1.5 px-3 border border-slate-300 text-slate-800">

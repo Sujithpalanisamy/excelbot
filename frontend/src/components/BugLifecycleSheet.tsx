@@ -106,8 +106,8 @@ export const BugLifecycleSheet: React.FC<BugLifecycleSheetProps> = ({
             <FileSpreadsheet className="w-3.5 h-3.5" />
             Sheet 8: Bug Lifecycle
           </span>
-          <span className="font-mono text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-            {data.totalBugs} Defects Tracked • End-to-End Cycle Time
+          <span className="text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+            {data.totalBugs} Defects Tracked
           </span>
         </div>
 
@@ -192,14 +192,13 @@ export const BugLifecycleSheet: React.FC<BugLifecycleSheetProps> = ({
       {/* Spreadsheet Canvas */}
       <div className="bg-white border border-slate-300 shadow-xs overflow-x-auto p-4 space-y-4">
         
-        {/* Banner (Row 1) */}
+        {/* Title Bar */}
         <div>
           <div className="bg-[#1b365d] text-white py-2 px-4 text-center font-bold tracking-wider text-sm sm:text-base uppercase border border-[#1b365d]">
-            BUG LIFECYCLE (AUTO — FETCHED FROM BUG TRACKER &amp; DEPLOYMENT TRACKER)
+            BUG LIFECYCLE TRACKING
           </div>
-          <div className="bg-slate-50 border-x border-b border-slate-300 px-4 py-2 text-[11px] text-slate-600 italic">
-            <span className="font-bold not-italic uppercase tracking-wider text-slate-700">FULLY AUTOMATIC: </span>
-            Nothing is entered manually here. Tracks full defect lifecycle from Date Raised to QA Release, Deployment, and Final QA Closure.
+          <div className="bg-slate-50 border-x border-b border-slate-300 px-4 py-2 text-[11px] text-slate-600">
+            Tracks full defect lifecycle from Date Raised to QA Release, Deployment, and Final Closure.
           </div>
         </div>
 
