@@ -20,6 +20,9 @@ import { ModuleQualitySheet } from './components/ModuleQualitySheet';
 import { BugAgingSheet } from './components/BugAgingSheet';
 import { ModuleUiVsFunctionalSheet } from './components/ModuleUiVsFunctionalSheet';
 import { PageSummarySheet } from './components/PageSummarySheet';
+import { DeveloperScorecardSheet } from './components/DeveloperScorecardSheet';
+import { QaScorecardSheet } from './components/QaScorecardSheet';
+import { AssigneeSummarySheet } from './components/AssigneeSummarySheet';
 import { AlertTriangle } from 'lucide-react';
 import type { BugItem, SettingsStatusResponse, SummaryDetail, ChatMessage, SettingsUpdateRequest } from './types';
 import { ALL_27_SHEETS } from './types';
@@ -515,12 +518,28 @@ export const App: React.FC = () => {
               if (fType === 'page') setSelectedPage(fVal);
             }}
           />
+        ) : activeSheetId === 9 ? (
+          <DeveloperScorecardSheet
+            onDownloadExcel={handleDownloadExcel}
+            onNavigateToSheet1WithFilter={(fType, fVal) => {
+              setActiveSheetId(1);
+              if (fType === 'developer') setSelectedAssignee(fVal);
+            }}
+          />
         ) : activeSheetId === 10 ? (
           <ReopenAnalysisSheet
             onDownloadExcel={handleDownloadExcel}
             onNavigateToSheet1WithFilter={(fType, fVal) => {
               setActiveSheetId(1);
               if (fType === 'developer') setSelectedAssignee(fVal);
+            }}
+          />
+        ) : activeSheetId === 11 ? (
+          <QaScorecardSheet
+            onDownloadExcel={handleDownloadExcel}
+            onNavigateToSheet1WithFilter={(fType, fVal) => {
+              setActiveSheetId(1);
+              if (fType === 'reporter') setSelectedReporter(fVal);
             }}
           />
         ) : activeSheetId === 12 ? (
@@ -566,6 +585,14 @@ export const App: React.FC = () => {
             onNavigateToSheet1WithFilter={(fType, fVal) => {
               setActiveSheetId(1);
               if (fType === 'page') setSelectedPage(fVal);
+            }}
+          />
+        ) : activeSheetId === 26 ? (
+          <AssigneeSummarySheet
+            onDownloadExcel={handleDownloadExcel}
+            onNavigateToSheet1WithFilter={(fType, fVal) => {
+              setActiveSheetId(1);
+              if (fType === 'developer') setSelectedAssignee(fVal);
             }}
           />
         ) : activeSheetId === 27 ? (

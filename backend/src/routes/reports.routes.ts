@@ -11,12 +11,42 @@ import {
   getModuleQualityData,
   getBugAgingData,
   getModuleUiVsFunctionalData,
-  getPageSummaryData
+  getPageSummaryData,
+  getDeveloperScorecardData,
+  getQaScorecardData,
+  getAssigneeSummaryData
 } from '../services/report-service.js';
 import { getAllBugs } from '../database/index.js';
 import { excelService } from '../integrations/excel/excel-service.js';
 
 export const reportsRouter = Router();
+
+reportsRouter.get('/developer-scorecard', (req, res, next) => {
+  try {
+    const data = getDeveloperScorecardData();
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
+
+reportsRouter.get('/qa-scorecard', (req, res, next) => {
+  try {
+    const data = getQaScorecardData();
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
+
+reportsRouter.get('/assignee-summary', (req, res, next) => {
+  try {
+    const data = getAssigneeSummaryData();
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
 
 reportsRouter.get('/reopen-analysis', (req, res, next) => {
   try {

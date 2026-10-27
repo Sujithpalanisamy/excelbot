@@ -2,6 +2,7 @@ import type {
   BugItem, SummaryDetail, ReportSummary, DashboardExcelData,
   PendingWithDeveloperData, BugLifecycleData, AzureImportItem, BugTrackerItem,
   ReopenAnalysisData, ModuleQualityData, BugAgingData, ModuleUiVsFunctionalData, PageSummaryData,
+  DeveloperScorecardData, QaScorecardData, AssigneeSummaryData,
   SettingsStatusResponse, SettingsUpdateRequest, ChatResponse 
 } from '../types';
 
@@ -183,6 +184,24 @@ export const api = {
   async getPageSummaryData(): Promise<PageSummaryData> {
     const res = await fetch(`${API_BASE}/reports/page-summary`);
     if (!res.ok) throw new Error('Failed to get page summary data');
+    return res.json();
+  },
+
+  async getDeveloperScorecardData(): Promise<DeveloperScorecardData> {
+    const res = await fetch(`${API_BASE}/reports/developer-scorecard`);
+    if (!res.ok) throw new Error('Failed to get developer scorecard data');
+    return res.json();
+  },
+
+  async getQaScorecardData(): Promise<QaScorecardData> {
+    const res = await fetch(`${API_BASE}/reports/qa-scorecard`);
+    if (!res.ok) throw new Error('Failed to get QA scorecard data');
+    return res.json();
+  },
+
+  async getAssigneeSummaryData(): Promise<AssigneeSummaryData> {
+    const res = await fetch(`${API_BASE}/reports/assignee-summary`);
+    if (!res.ok) throw new Error('Failed to get assignee summary data');
     return res.json();
   },
 
