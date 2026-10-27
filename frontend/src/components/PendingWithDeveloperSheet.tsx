@@ -95,9 +95,10 @@ export const PendingWithDeveloperSheet: React.FC<PendingWithDeveloperSheetProps>
   }
 
   // Filtered detailed items
+  const cleanSearch = searchTerm.replace(/^#/, '').trim().toLowerCase();
   const filteredBugs = data.pendingBugs.filter(b => {
     const matchesSearch = !searchTerm || 
-      b.id.toString().includes(searchTerm) || 
+      (cleanSearch && b.id.toString().includes(cleanSearch)) || 
       b.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
       b.assigned_to.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesMod = filterModule === 'all' || b.module.toLowerCase() === filterModule.toLowerCase();

@@ -350,7 +350,7 @@ export const BugTable: React.FC<BugTableProps> = ({
               type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search ID, title, steps, tags..."
+              placeholder="Search by Bug ID (e.g. 10165), title, steps..."
               className="h-9 w-full pl-8 pr-3 text-xs rounded-lg bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:border-sky-600 focus:ring-1 focus:ring-sky-600 focus:outline-none transition-all shadow-2xs"
             />
           </div>

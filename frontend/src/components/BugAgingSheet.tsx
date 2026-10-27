@@ -86,9 +86,10 @@ export const BugAgingSheet: React.FC<BugAgingSheetProps> = ({
     );
   }
 
+  const cleanSearch = searchTerm.replace(/^#/, '').trim().toLowerCase();
   const filteredItems = data.items.filter(item => {
     const matchesSearch = !searchTerm || 
-      item.bug_id.toString().includes(searchTerm) ||
+      (cleanSearch && item.bug_id.toString().includes(cleanSearch)) ||
       item.module.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.page_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.original_developer.toLowerCase().includes(searchTerm.toLowerCase()) ||

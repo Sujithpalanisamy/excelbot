@@ -66,9 +66,10 @@ export const AzureImportSheet: React.FC<AzureImportSheetProps> = ({
   };
 
   // Filter items
+  const cleanSearch = searchTerm.replace(/^#/, '').trim().toLowerCase();
   const filtered = items.filter(it => {
     const matchesSearch = !searchTerm || 
-      it.id.toString().includes(searchTerm) || 
+      (cleanSearch && it.id.toString().includes(cleanSearch)) || 
       it.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
       it.assignee_clean.toLowerCase().includes(searchTerm.toLowerCase()) ||
       it.tags.toLowerCase().includes(searchTerm.toLowerCase());

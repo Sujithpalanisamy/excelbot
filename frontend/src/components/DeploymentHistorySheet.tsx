@@ -75,9 +75,10 @@ export const DeploymentHistorySheet: React.FC<DeploymentHistorySheetProps> = ({
     );
   }
 
+  const cleanSearch = searchTerm.replace(/^#/, '').trim().toLowerCase();
   const filteredHistory = data.history.filter(h => {
     const matchesSearch = !searchTerm || 
-      String(h.id).includes(searchTerm) ||
+      (cleanSearch && String(h.id).includes(cleanSearch)) ||
       (h.itemName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (h.qaAssigned || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (h.notes || '').toLowerCase().includes(searchTerm.toLowerCase());

@@ -238,7 +238,8 @@ export const App: React.FC = () => {
     // Search query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      const matchId = b.id.toString().includes(q);
+      const qClean = q.replace(/^#/, '').trim();
+      const matchId = qClean ? b.id.toString().includes(qClean) : false;
       const matchTitle = (b.title || '').toLowerCase().includes(q);
       const matchDesc = (b.description || '').toLowerCase().includes(q);
       const matchRepro = (b.repro_steps || '').toLowerCase().includes(q);
@@ -339,11 +340,30 @@ export const App: React.FC = () => {
           </div>
         )}
 
-        {/* Excel 27-Sheet Workspace Tabs Strip */}
+        {/* Excel 27-Sheet Workspace Tabs Strip with Universal Bug ID Search */}
         <SheetTabs
           activeSheetId={activeSheetId}
           onSelectSheet={setActiveSheetId}
           totalBugsCount={bugs.length}
+          bugs={bugs}
+          onSelectBug={handleSelectBug}
+          onNavigateToBug={(bugId) => {
+            setActiveSheetId(1);
+            setSearchQuery(String(bugId));
+            setSelectedPage('');
+            setSelectedState('');
+            setSelectedSeverity('');
+            setSelectedPriority('');
+            setSelectedAssignee('');
+            setSelectedReporter('');
+            setSelectedDate('');
+            setActiveMetricFilter('all');
+            window.scrollTo({ top: 400, behavior: 'smooth' });
+          }}
+          onBugFetched={(newBug) => {
+            setBugs((prev) => [newBug, ...prev.filter((b) => b.id !== newBug.id)]);
+            handleSelectBug(newBug);
+          }}
         />
 
         {activeSheetId === 1 ? (

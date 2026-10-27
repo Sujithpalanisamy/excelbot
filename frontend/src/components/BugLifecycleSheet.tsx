@@ -80,9 +80,10 @@ export const BugLifecycleSheet: React.FC<BugLifecycleSheetProps> = ({
     );
   }
 
+  const cleanSearch = searchTerm.replace(/^#/, '').trim().toLowerCase();
   const filtered = data.records.filter(it => {
     const matchesSearch = !searchTerm || 
-      it.bug_id.toString().includes(searchTerm) || 
+      (cleanSearch && it.bug_id.toString().includes(cleanSearch)) || 
       it.module.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesMod = filterModule === 'all' || it.module.toLowerCase() === filterModule.toLowerCase();
     const matchesStat = filterStatus === 'all' || it.status.toLowerCase() === filterStatus.toLowerCase();

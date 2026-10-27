@@ -69,9 +69,10 @@ export const BugTrackerSheet: React.FC<BugTrackerSheetProps> = ({
     URL.revokeObjectURL(url);
   };
 
+  const cleanSearch = searchTerm.replace(/^#/, '').trim().toLowerCase();
   const filtered = items.filter(it => {
     const matchesSearch = !searchTerm || 
-      it.bug_id.toString().includes(searchTerm) || 
+      (cleanSearch && it.bug_id.toString().includes(cleanSearch)) || 
       it.bug_summary.toLowerCase().includes(searchTerm.toLowerCase()) || 
       it.original_developer.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesMod = filterModule === 'all' || it.module.toLowerCase() === filterModule.toLowerCase();

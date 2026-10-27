@@ -78,9 +78,10 @@ export const DeploymentTrackerSheet: React.FC<DeploymentTrackerSheetProps> = ({
     );
   }
 
+  const cleanSearch = searchTerm.replace(/^#/, '').trim().toLowerCase();
   const filteredDeployments = data.deployments.filter(d => {
     const matchesSearch = !searchTerm || 
-      String(d.id).includes(searchTerm) ||
+      (cleanSearch && String(d.id).includes(cleanSearch)) ||
       (d.itemName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (d.developers || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (d.qaAssigned || '').toLowerCase().includes(searchTerm.toLowerCase());
