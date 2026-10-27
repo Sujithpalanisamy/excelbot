@@ -14,12 +14,82 @@ import {
   getPageSummaryData,
   getDeveloperScorecardData,
   getQaScorecardData,
-  getAssigneeSummaryData
+  getAssigneeSummaryData,
+  getPageTrackerData,
+  getDeploymentTrackerData,
+  getDeploymentHistoryData,
+  getPriorityTasksData,
+  getGanttData,
+  getCrData,
+  getFeedbackData
 } from '../services/report-service.js';
 import { getAllBugs } from '../database/index.js';
 import { excelService } from '../integrations/excel/excel-service.js';
 
 export const reportsRouter = Router();
+
+reportsRouter.get('/page-tracker', (req, res, next) => {
+  try {
+    const data = getPageTrackerData();
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
+
+reportsRouter.get('/deployment-tracker', (req, res, next) => {
+  try {
+    const data = getDeploymentTrackerData();
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
+
+reportsRouter.get('/deployment-history', (req, res, next) => {
+  try {
+    const data = getDeploymentHistoryData();
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
+
+reportsRouter.get('/priority-tasks', (req, res, next) => {
+  try {
+    const data = getPriorityTasksData();
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
+
+reportsRouter.get('/gantt', (req, res, next) => {
+  try {
+    const data = getGanttData();
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
+
+reportsRouter.get('/cr', (req, res, next) => {
+  try {
+    const data = getCrData();
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
+
+reportsRouter.get('/feedback', (req, res, next) => {
+  try {
+    const data = getFeedbackData();
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
 
 reportsRouter.get('/developer-scorecard', (req, res, next) => {
   try {

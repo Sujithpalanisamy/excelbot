@@ -3,6 +3,7 @@ import type {
   PendingWithDeveloperData, BugLifecycleData, AzureImportItem, BugTrackerItem,
   ReopenAnalysisData, ModuleQualityData, BugAgingData, ModuleUiVsFunctionalData, PageSummaryData,
   DeveloperScorecardData, QaScorecardData, AssigneeSummaryData,
+  PageTrackerData, DeploymentTrackerData, DeploymentHistoryData, PriorityTasksData, GanttData, CrData, FeedbackData,
   SettingsStatusResponse, SettingsUpdateRequest, ChatResponse 
 } from '../types';
 
@@ -202,6 +203,48 @@ export const api = {
   async getAssigneeSummaryData(): Promise<AssigneeSummaryData> {
     const res = await fetch(`${API_BASE}/reports/assignee-summary`);
     if (!res.ok) throw new Error('Failed to get assignee summary data');
+    return res.json();
+  },
+
+  async getPageTrackerData(): Promise<PageTrackerData> {
+    const res = await fetch(`${API_BASE}/reports/page-tracker`);
+    if (!res.ok) throw new Error('Failed to get page tracker data');
+    return res.json();
+  },
+
+  async getDeploymentTrackerData(): Promise<DeploymentTrackerData> {
+    const res = await fetch(`${API_BASE}/reports/deployment-tracker`);
+    if (!res.ok) throw new Error('Failed to get deployment tracker data');
+    return res.json();
+  },
+
+  async getDeploymentHistoryData(): Promise<DeploymentHistoryData> {
+    const res = await fetch(`${API_BASE}/reports/deployment-history`);
+    if (!res.ok) throw new Error('Failed to get deployment history data');
+    return res.json();
+  },
+
+  async getPriorityTasksData(): Promise<PriorityTasksData> {
+    const res = await fetch(`${API_BASE}/reports/priority-tasks`);
+    if (!res.ok) throw new Error('Failed to get priority tasks data');
+    return res.json();
+  },
+
+  async getGanttData(): Promise<GanttData> {
+    const res = await fetch(`${API_BASE}/reports/gantt`);
+    if (!res.ok) throw new Error('Failed to get Gantt data');
+    return res.json();
+  },
+
+  async getCrData(): Promise<CrData> {
+    const res = await fetch(`${API_BASE}/reports/cr`);
+    if (!res.ok) throw new Error('Failed to get CR data');
+    return res.json();
+  },
+
+  async getFeedbackData(): Promise<FeedbackData> {
+    const res = await fetch(`${API_BASE}/reports/feedback`);
+    if (!res.ok) throw new Error('Failed to get feedback data');
     return res.json();
   },
 

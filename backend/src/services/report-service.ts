@@ -1,5 +1,29 @@
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { getAllBugs } from '../database/index.js';
 import type { BugItem, ReportSummary, PageSummaryRow, AssigneeSummaryRow } from '../types/index.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const phase5DataPath = path.join(__dirname, '..', 'data', 'phase5-data.json');
+
+let phase5Cache: any = null;
+function getPhase5Data() {
+  if (!phase5Cache) {
+    if (fs.existsSync(phase5DataPath)) {
+      try {
+        phase5Cache = JSON.parse(fs.readFileSync(phase5DataPath, 'utf-8'));
+      } catch (err) {
+        console.error('Error reading phase5-data.json:', err);
+        phase5Cache = { pageTracker: [], deploymentTracker: [], deploymentHistory: [], priorityTasks: [], cr: [], feedback: [] };
+      }
+    } else {
+      phase5Cache = { pageTracker: [], deploymentTracker: [], deploymentHistory: [], priorityTasks: [], cr: [], feedback: [] };
+    }
+  }
+  return phase5Cache;
+}
 
 export function buildReportSummary(bugs?: BugItem[]): ReportSummary {
   const bugList = bugs || getAllBugs();
@@ -1230,5 +1254,107 @@ export function getAssigneeSummaryData() {
     }
   };
 }
+
+export function getPageTrackerData() {
+  const data = getPhase5Data();
+  const pages = data.pageTracker || [];
+
+  const completed = pages.filter((p: any) => p.overallStatus === 'Completed').length;
+  const inProgress = pages.length - completed;
+  const modules = Array.from(new Set(pages.map((p: any) => p.module))).filter(Boolean);
+
+  return {
+    totalPages: pages.length,
+    completedPages: completed,
+    inProgressPages: inProgress,
+    avgProgress: pages.length > 0 ? ((completed / pages.length) * 100).toFixed(1) + '%' : '0.0%',
+    modules,
+    pages
+  };
+}
+
+export function getDeploymentTrackerData() {
+  const data = getPhase5Data();
+  const deployments = data.deploymentTracker || [];
+
+  const bugs = deployments.filter((d: any) => d.type === 'Bug').length;
+  const tasks = deployments.filter((d: any) => d.type === 'Task').length;
+  const dates = Array.from(new Set(deployments.map((d: any) => d.deploymentDate))).filter(Boolean);
+
+  return {
+    totalDeployments: deployments.length,
+    bugsDeployed: bugs,
+    tasksDeployed: tasks,
+    dates,
+    deployments
+  };
+}
+
+export function getDeploymentHistoryData() {
+  const data = getPhase5Data();
+  const history = data.deploymentHistory || [];
+
+  return {
+    totalItems: history.length,
+    history
+  };
+}
+
+export function getPriorityTasksData() {
+  const data = getPhase5Data();
+  const tasks = data.priorityTasks || [];
+
+  return {
+    totalTasks: tasks.length,
+    tasks
+  };
+}
+
+export function getGanttData() {
+  const data = getPhase5Data();
+  const pages = data.pageTracker || [];
+  const modules = Array.from(new Set(pages.map((p: any) => p.module))).filter(Boolean);
+
+  const items = pages.slice(0, 100).map((p: any) => ({
+    pageId: p.pageId,
+    module: p.module,
+    pageName: p.pageName,
+    plannedStart: p.plannedStart,
+    plannedEnd: p.plannedEnd,
+    progress: p.progress,
+    status: p.overallStatus
+  }));
+
+  return {
+    timelineStart: '2026-06-23',
+    modules,
+    items
+  };
+}
+
+export function getCrData() {
+  const data = getPhase5Data();
+  const crList = data.cr || [];
+  const modules = Array.from(new Set(crList.map((c: any) => c.module))).filter(Boolean);
+
+  return {
+    totalCr: crList.length,
+    modules,
+    crList
+  };
+}
+
+export function getFeedbackData() {
+  const data = getPhase5Data();
+  const feedbackList = data.feedback || [];
+  const modules = Array.from(new Set(feedbackList.map((f: any) => f.module))).filter(Boolean);
+
+  return {
+    totalFeedback: feedbackList.length,
+    modules,
+    feedbackList
+  };
+}
+
 
 

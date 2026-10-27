@@ -163,11 +163,11 @@ export interface ExcelSheetDef {
 export const ALL_27_SHEETS: ExcelSheetDef[] = [
   { id: 1, name: "All Bugs", category: 'core', description: "Exported bug table with ID, Title, Repro Steps, State, Severity, Assignee", status: 'active' },
   { id: 2, name: "Dashboard", category: 'dashboard', description: "Executive Project Development & QA Quality Dashboard", status: 'active' },
-  { id: 3, name: "Page Tracker", category: 'analytics', description: "Page & module delivery tracking matrix", status: 'planned' },
+  { id: 3, name: "Page Tracker", category: 'analytics', description: "Page & module delivery tracking matrix", status: 'active' },
   { id: 4, name: "Azure Import", category: 'core', description: "Live sync table where Azure DevOps work items are imported", status: 'active' },
   { id: 5, name: "Bug Tracker", category: 'core', description: "Comprehensive bug tracking matrix with status reconciliation", status: 'active' },
-  { id: 6, name: "Deployment Tracker", category: 'release', description: "Deployment items, release dates, and developer tracking", status: 'planned' },
-  { id: 7, name: "Deployment History", category: 'release', description: "Historical deployment log", status: 'planned' },
+  { id: 6, name: "Deployment Tracker", category: 'release', description: "Deployment items, release dates, and developer tracking", status: 'active' },
+  { id: 7, name: "Deployment History", category: 'release', description: "Historical deployment log", status: 'active' },
   { id: 8, name: "Bug Lifecycle", category: 'core', description: "Lifecycle tracking (synced from Bug Tracker & Deployments)", status: 'active' },
   { id: 9, name: "Developer Scorecard", category: 'scorecards', description: "Developer defect fix accuracy & turnaround metrics", status: 'active' },
   { id: 10, name: "Reopen Analysis", category: 'analytics', description: "Analysis on reopened bugs & fix quality", status: 'active' },
@@ -176,11 +176,11 @@ export const ALL_27_SHEETS: ExcelSheetDef[] = [
   { id: 13, name: "Bug Aging", category: 'analytics', description: "Aging duration calculation for unresolved bugs", status: 'active' },
   { id: 14, name: "Lists", category: 'rules', description: "Master dropdowns (Severities, Priorities, States, Complexity)", status: 'planned' },
   { id: 15, name: "Instructions", category: 'rules', description: "Guide on how to navigate and use the workbook", status: 'planned' },
-  { id: 16, name: "Priority tasks", category: 'release', description: "Priority QA tasks, blockers, and notes", status: 'planned' },
-  { id: 17, name: "Gantt", category: 'release', description: "Basic module & page delivery timeline", status: 'planned' },
+  { id: 16, name: "Priority tasks", category: 'release', description: "Priority QA tasks, blockers, and notes", status: 'active' },
+  { id: 17, name: "Gantt", category: 'release', description: "Basic module & page delivery timeline", status: 'active' },
   { id: 18, name: "miscellaneous", category: 'rules', description: "Miscellaneous notes and admin fields", status: 'planned' },
-  { id: 19, name: "CR", category: 'release', description: "Change Request (CR) register", status: 'planned' },
-  { id: 20, name: "Feedback", category: 'release', description: "Feedback notes and review points", status: 'planned' },
+  { id: 19, name: "CR", category: 'release', description: "Change Request (CR) register", status: 'active' },
+  { id: 20, name: "Feedback", category: 'release', description: "Feedback notes and review points", status: 'active' },
   { id: 21, name: "Reports", category: 'dashboard', description: "Module reports catalog", status: 'active' },
   { id: 22, name: "Mapping", category: 'rules', description: "Auto-classification rules (keywords -> Page names)", status: 'planned' },
   { id: 23, name: "Module UI vs Functional", category: 'analytics', description: "Auto-calculated UI vs Functional defect ratio", status: 'active' },
@@ -569,4 +569,125 @@ export interface AssigneeSummaryData {
     pctOfTotal: string;
   };
 }
+
+export interface PageTrackerItem {
+  pageId: number;
+  module: string;
+  release: string;
+  pageName: string;
+  complexity: string;
+  uiDev: string;
+  apiDev: string;
+  spDev: string;
+  dbDev: string;
+  bindingDev: string;
+  qa: string;
+  plannedStart: string;
+  plannedEnd: string;
+  actualEnd: string;
+  overallStatus: string;
+  firstPass: string;
+  progress: string;
+}
+
+export interface PageTrackerData {
+  totalPages: number;
+  completedPages: number;
+  inProgressPages: number;
+  avgProgress: string;
+  modules: string[];
+  pages: PageTrackerItem[];
+}
+
+export interface DeploymentTrackerItem {
+  type: string;
+  id: number;
+  deploymentDate: string;
+  itemName: string;
+  developers: string;
+  severity: string;
+  priority: string;
+  status: string;
+  qaStatus: string;
+  qaAssigned: string;
+  workedDate: string;
+}
+
+export interface DeploymentTrackerData {
+  totalDeployments: number;
+  bugsDeployed: number;
+  tasksDeployed: number;
+  dates: string[];
+  deployments: DeploymentTrackerItem[];
+}
+
+export interface DeploymentHistoryItem {
+  type: string;
+  id: number;
+  itemName: string;
+  deploymentDate: string;
+  status: string;
+  qaStatus: string;
+  qaAssigned: string;
+  notes: string;
+}
+
+export interface DeploymentHistoryData {
+  totalItems: number;
+  history: DeploymentHistoryItem[];
+}
+
+export interface PriorityTaskItem {
+  id: number;
+  taskName: string;
+  notes: string;
+}
+
+export interface PriorityTasksData {
+  totalTasks: number;
+  tasks: PriorityTaskItem[];
+}
+
+export interface GanttItem {
+  pageId: number;
+  module: string;
+  pageName: string;
+  plannedStart: string;
+  plannedEnd: string;
+  progress: string;
+  status: string;
+}
+
+export interface GanttData {
+  timelineStart: string;
+  modules: string[];
+  items: GanttItem[];
+}
+
+export interface CrItem {
+  id: number;
+  module: string;
+  summary: string;
+  status: string;
+}
+
+export interface CrData {
+  totalCr: number;
+  modules: string[];
+  crList: CrItem[];
+}
+
+export interface FeedbackItem {
+  id: number;
+  module: string;
+  issue: string;
+  reportedBy: string;
+}
+
+export interface FeedbackData {
+  totalFeedback: number;
+  modules: string[];
+  feedbackList: FeedbackItem[];
+}
+
 

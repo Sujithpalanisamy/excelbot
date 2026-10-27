@@ -23,6 +23,13 @@ import { PageSummarySheet } from './components/PageSummarySheet';
 import { DeveloperScorecardSheet } from './components/DeveloperScorecardSheet';
 import { QaScorecardSheet } from './components/QaScorecardSheet';
 import { AssigneeSummarySheet } from './components/AssigneeSummarySheet';
+import { PageTrackerSheet } from './components/PageTrackerSheet';
+import { DeploymentTrackerSheet } from './components/DeploymentTrackerSheet';
+import { DeploymentHistorySheet } from './components/DeploymentHistorySheet';
+import { PriorityTasksSheet } from './components/PriorityTasksSheet';
+import { GanttSheet } from './components/GanttSheet';
+import { CrSheet } from './components/CrSheet';
+import { FeedbackSheet } from './components/FeedbackSheet';
 import { AlertTriangle } from 'lucide-react';
 import type { BugItem, SettingsStatusResponse, SummaryDetail, ChatMessage, SettingsUpdateRequest } from './types';
 import { ALL_27_SHEETS } from './types';
@@ -492,6 +499,15 @@ export const App: React.FC = () => {
               if (fType === 'developer') setSelectedAssignee(fVal);
             }}
           />
+        ) : activeSheetId === 3 ? (
+          <PageTrackerSheet
+            onDownloadExcel={handleDownloadExcel}
+            onNavigateToSheet1WithFilter={(fType, fVal) => {
+              setActiveSheetId(1);
+              if (fType === 'page') setSelectedPage(fVal);
+              if (fType === 'developer') setSelectedAssignee(fVal);
+            }}
+          />
         ) : activeSheetId === 4 ? (
           <AzureImportSheet
             onDownloadExcel={handleDownloadExcel}
@@ -508,6 +524,23 @@ export const App: React.FC = () => {
               setActiveSheetId(1);
               if (fType === 'developer') setSelectedAssignee(fVal);
               if (fType === 'page') setSelectedPage(fVal);
+            }}
+          />
+        ) : activeSheetId === 6 ? (
+          <DeploymentTrackerSheet
+            onDownloadExcel={handleDownloadExcel}
+            onNavigateToSheet1WithFilter={(fType, fVal) => {
+              setActiveSheetId(1);
+              if (fType === 'bugId') setSearchQuery(fVal);
+              if (fType === 'developer') setSelectedAssignee(fVal);
+            }}
+          />
+        ) : activeSheetId === 7 ? (
+          <DeploymentHistorySheet
+            onDownloadExcel={handleDownloadExcel}
+            onNavigateToSheet1WithFilter={(fType, fVal) => {
+              setActiveSheetId(1);
+              if (fType === 'bugId') setSearchQuery(fVal);
             }}
           />
         ) : activeSheetId === 8 ? (
@@ -559,6 +592,22 @@ export const App: React.FC = () => {
               if (fType === 'module') setSelectedPage(fVal);
               if (fType === 'bugId') setSearchQuery(fVal);
             }}
+          />
+        ) : activeSheetId === 16 ? (
+          <PriorityTasksSheet
+            onDownloadExcel={handleDownloadExcel}
+          />
+        ) : activeSheetId === 17 ? (
+          <GanttSheet
+            onDownloadExcel={handleDownloadExcel}
+          />
+        ) : activeSheetId === 19 ? (
+          <CrSheet
+            onDownloadExcel={handleDownloadExcel}
+          />
+        ) : activeSheetId === 20 ? (
+          <FeedbackSheet
+            onDownloadExcel={handleDownloadExcel}
           />
         ) : activeSheetId === 21 ? (
           <ReportCatalogSheet />
@@ -618,7 +667,7 @@ export const App: React.FC = () => {
               </div>
               <p>
                 We are building each of the 27 Excel sheets directly inside this application one by one.
-                Currently, <strong>Sheet 1 (All Bugs)</strong>, <strong>Sheet 2 (Dashboard)</strong>, <strong>Sheet 21 (Reports Catalog)</strong>, and <strong>Sheet 27 (Executive Report)</strong> are live with real-time calculations.
+                Currently, <strong>23 sheets</strong> (Sheets 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16, 17, 19, 20, 21, 23, 24, 25, 26, 27) are live with full real-time data calculations and drill-downs.
               </p>
             </div>
             <button
