@@ -1,0 +1,586 @@
+{
+  "lists": {
+    "complexities": [
+      "Low",
+      "Medium",
+      "High",
+      "Very High"
+    ],
+    "pageStatuses": [
+      "Not Started",
+      "In Progress",
+      "Completed",
+      "On Hold",
+      "Blocked"
+    ],
+    "severities": [
+      "Critical",
+      "High",
+      "Medium",
+      "Low"
+    ],
+    "priorities": [
+      "P1",
+      "P2",
+      "P3",
+      "P4"
+    ],
+    "bugStatuses": [
+      "Open",
+      "Fixed",
+      "Closed",
+      "Reopened",
+      "Deferred",
+      "Won't Fix",
+      "Rejected",
+      "Duplicate"
+    ],
+    "rootCauses": [
+      "Requirement",
+      "UI",
+      "Frontend",
+      "Backend",
+      "API",
+      "Stored Procedure",
+      "Database",
+      "Performance",
+      "Security",
+      "Validation",
+      "Integration",
+      "Configuration",
+      "Deployment"
+    ],
+    "components": [
+      "UI",
+      "API",
+      "Backend - SP",
+      "Backend - Database",
+      "UI Binding"
+    ],
+    "bugTypes": [
+      "Standalone",
+      "Parent",
+      "Child"
+    ],
+    "developers": [
+      "Raghupavan",
+      "KiranKumar N",
+      "Karthik R",
+      "Abhishek K",
+      "Adithya Kislay",
+      "Vamsi chowdary",
+      "Manikandan",
+      "Boopathi Senthi",
+      "Dev F",
+      "Dev C"
+    ],
+    "qaTeam": [
+      "QA A",
+      "Athmiya A G",
+      "Sujith",
+      "Suresh T",
+      "Varun M"
+    ],
+    "sprints": [
+      "Release 1.0",
+      "Release 1.1",
+      "Release 2.0"
+    ]
+  },
+  "instructions": {
+    "title": "HOW TO USE THIS TRACKING MATRIX",
+    "steps": [
+      {
+        "step": "1. Page Tracker",
+        "guidance": "Enter one row per page. Assign separate developers for UI, API, SP, Database and UI Binding. Update each component status; Progress % calculates automatically."
+      },
+      {
+        "step": "2. Bug Tracker",
+        "guidance": "Log every bug. Original Developer is the person who created the affected component. Fix Developer is the person who resolves the bug."
+      },
+      {
+        "step": "3. Parent / Child Bugs",
+        "guidance": "For a parent bug, leave Parent Bug ID blank and select Parent. For an internal child bug, enter the Parent Bug ID, select Child and set Internal Bug? to Yes."
+      },
+      {
+        "step": "4. Reopened Bugs",
+        "guidance": "Set Reopened? to Yes and increase No. of Reopens whenever a fix fails retesting."
+      },
+      {
+        "step": "5. Developer Scorecard",
+        "guidance": "Automatically calculates component workload, original defect quality, fix quality and final developer score."
+      },
+      {
+        "step": "6. QA Scorecard",
+        "guidance": "Automatically calculates pages tested, bugs raised, valid bugs, rejected/duplicate bugs and QA accuracy. Missed Bugs remains a controlled manual input."
+      },
+      {
+        "step": "7. Dashboard",
+        "guidance": "All KPIs and charts are formula-driven. Do not type over calculated cells."
+      },
+      {
+        "step": "8. Gantt",
+        "guidance": "Basic module-wise Gantt is generated from Planned Start, Planned End, Actual End and page Progress %."
+      },
+      {
+        "step": "9. Lists",
+        "guidance": "Update developer and QA names in Lists. Use exactly the same names throughout the workbook."
+      },
+      {
+        "step": "AUTOMATED AZURE REFRESH",
+        "guidance": ""
+      },
+      {
+        "step": "Step 1 - Download",
+        "guidance": "In Azure DevOps run the query and export to CSV (columns: ID, Work Item Type, Title, Assigned To, State, Tags, Created Date)."
+      },
+      {
+        "step": "Step 2 - Paste",
+        "guidance": "Open the 'Azure Import' sheet, click A4, Paste Values of everything below the CSV header row. Clear any leftover old rows underneath."
+      },
+      {
+        "step": "Step 3 - Done",
+        "guidance": "'Module UI vs Functional' and 'Pending With Developer' recalculate instantly. No other action needed."
+      },
+      {
+        "step": "Classification",
+        "guidance": "Module comes from the Bug Tracker when the bug already exists there, otherwise from the keyword rules on the 'Mapping' sheet. UI vs Functional comes from the Azure Tags (UI / Functional) first, then the UI keyword list on 'Mapping'. Edit those lists to fine-tune."
+      },
+      {
+        "step": "New bugs",
+        "guidance": "Column O on 'Azure Import' flags IDs that are not yet in the Bug Tracker in red - copy those rows into the Bug Tracker to keep the scorecards complete."
+      },
+      {
+        "step": "Sync check",
+        "guidance": "Bug Tracker columns AB and AC compare its Status against the latest Azure State and flag MISMATCH."
+      }
+    ],
+    "colorCodes": [
+      {
+        "role": "Table Headers",
+        "code": "#1B365D",
+        "desc": "Dark Navy Blue — Primary Section Banners & Column Headers"
+      },
+      {
+        "role": "Calculated Totals",
+        "code": "#FFF2CC",
+        "desc": "Soft Yellow — Formula-Driven Sum / Average Summary Rows"
+      },
+      {
+        "role": "Section Subtitles",
+        "code": "#D9E1F2",
+        "desc": "Soft Blue — Module Groups & Table Headers"
+      },
+      {
+        "role": "Critical Severity",
+        "code": "#FCE4D6",
+        "desc": "Soft Red/Peach — High Defect Alerts & Urgent Focus"
+      },
+      {
+        "role": "High Severity",
+        "code": "#FFF2CC",
+        "desc": "Soft Yellow — Priority Attention Items"
+      },
+      {
+        "role": "Completed / Pass",
+        "code": "#E2EFDA",
+        "desc": "Soft Green — 100% Verified Milestones & Passes"
+      }
+    ],
+    "rules": [
+      "Enter one row per page in Page Tracker with assigned developers across UI, API, SP, DB and Binding.",
+      "Log every bug in Bug Tracker. Original Developer created the component; Fix Developer resolves the defect.",
+      "For parent bugs, leave Parent Bug ID blank and select Parent. For internal child bugs, link the Parent ID.",
+      "Set Reopened? to Yes and increment No. of Reopens whenever a fix fails QA retesting.",
+      "Developer Scorecard & QA Scorecard auto-calculate based on active bug states and testing metrics.",
+      "Dashboard formulas recalculate in real-time. Do not type over calculated cells."
+    ]
+  },
+  "misc": {
+    "nurtureManage": [
+      {
+        "item": "Week Off template",
+        "notes": "handled in shift"
+      },
+      {
+        "item": "Unit ID",
+        "notes": ""
+      },
+      {
+        "item": "Document Sign Settings",
+        "notes": ""
+      },
+      {
+        "item": "Jobcode logic configuration",
+        "notes": "Recruitment"
+      },
+      {
+        "item": "Jobcodes",
+        "notes": "Recruitment"
+      },
+      {
+        "item": "Map2 configuration",
+        "notes": "REMOVED"
+      },
+      {
+        "item": "Map2 hierarchy",
+        "notes": "is used in BOFC"
+      },
+      {
+        "item": "Map2 uploads",
+        "notes": "REMOVED"
+      },
+      {
+        "item": "Organization levels",
+        "notes": "REMOVED"
+      },
+      {
+        "item": "ESI State Master",
+        "notes": "will be done in payroll"
+      },
+      {
+        "item": "ESI Dispensary Master",
+        "notes": "will be done in payroll"
+      },
+      {
+        "item": "Reprimands",
+        "notes": "other module"
+      },
+      {
+        "item": "Responsibility",
+        "notes": ""
+      },
+      {
+        "item": "Review Types",
+        "notes": "other module"
+      },
+      {
+        "item": "Rewards",
+        "notes": "other module"
+      },
+      {
+        "item": "Sub Functions",
+        "notes": ""
+      },
+      {
+        "item": "Route Plan",
+        "notes": "Removed"
+      },
+      {
+        "item": "Sections",
+        "notes": "Company module"
+      },
+      {
+        "item": "Work Shifts",
+        "notes": "Shift module connected"
+      },
+      {
+        "item": "Connect",
+        "notes": "Dashboard task"
+      },
+      {
+        "item": "Map Forms / FAQ / Policies",
+        "notes": "Company module"
+      },
+      {
+        "item": "Other Setting",
+        "notes": "Email services"
+      },
+      {
+        "item": "Reimbursement Bank",
+        "notes": "payroll module"
+      },
+      {
+        "item": "Declaration Details",
+        "notes": "declaration module"
+      },
+      {
+        "item": "Email template",
+        "notes": "1.0 Emails"
+      },
+      {
+        "item": "letter template",
+        "notes": "letter"
+      },
+      {
+        "item": "configure events",
+        "notes": "1.0 Emails"
+      },
+      {
+        "item": "master reciepients",
+        "notes": "1.0 Emails"
+      },
+      {
+        "item": "Logs",
+        "notes": "1.0 Emails"
+      },
+      {
+        "item": "Field permission",
+        "notes": ""
+      },
+      {
+        "item": "P2C module",
+        "notes": ""
+      }
+    ],
+    "pwAdmin": [
+      {
+        "item": "Manage Permission",
+        "notes": "Completed"
+      },
+      {
+        "item": "Field Based Permission",
+        "notes": "ESS-Completed"
+      },
+      {
+        "item": "Module Based Permission",
+        "notes": "Checklist Items"
+      },
+      {
+        "item": "Payroll Permission Template",
+        "notes": "Checklist Templates"
+      },
+      {
+        "item": "Notice Period Configuration",
+        "notes": ""
+      },
+      {
+        "item": "Manage Role Access",
+        "notes": ""
+      },
+      {
+        "item": "Retirement Age Configuration",
+        "notes": ""
+      },
+      {
+        "item": "handled in shift roster",
+        "notes": ""
+      }
+    ],
+    "fields": [
+      {
+        "item": "",
+        "notes": "Issue letter"
+      },
+      {
+        "item": "",
+        "notes": "Configuration"
+      },
+      {
+        "item": "",
+        "notes": "Letter Type"
+      },
+      {
+        "item": "",
+        "notes": "Letter Email Template"
+      },
+      {
+        "item": "",
+        "notes": "Letter Template List"
+      },
+      {
+        "item": "",
+        "notes": "Document Repository"
+      },
+      {
+        "item": "",
+        "notes": "Checklist Bulk Upload"
+      },
+      {
+        "item": "",
+        "notes": "Other Setting"
+      },
+      {
+        "item": "",
+        "notes": "Map Forms / FAQ / Policies"
+      },
+      {
+        "item": "",
+        "notes": "Connect"
+      },
+      {
+        "item": "",
+        "notes": "WorkFlow Privileged Actors Dashboard"
+      },
+      {
+        "item": "",
+        "notes": "Doc Template Dashboard"
+      },
+      {
+        "item": "",
+        "notes": "Map Document Template To Employee Set"
+      },
+      {
+        "item": "",
+        "notes": "Module Attachments"
+      },
+      {
+        "item": "",
+        "notes": "Delegate Authority"
+      },
+      {
+        "item": "",
+        "notes": "Manage Role Access"
+      },
+      {
+        "item": "",
+        "notes": "Excel Upload"
+      },
+      {
+        "item": "",
+        "notes": "Excel Mapping"
+      },
+      {
+        "item": "",
+        "notes": "Checklist Templates"
+      }
+    ]
+  },
+  "mapping": {
+    "developerMappings": [
+      {
+        "azureAssignee": "Kiran Kumar N",
+        "cleanName": "KiranKumar N"
+      },
+      {
+        "azureAssignee": "Raghu Pavan",
+        "cleanName": "Raghupavan"
+      },
+      {
+        "azureAssignee": "vamsi chowdary",
+        "cleanName": "Vamsi chowdary"
+      },
+      {
+        "azureAssignee": "Suresh T",
+        "cleanName": "Suresh T"
+      },
+      {
+        "azureAssignee": "Boopathi Senthi",
+        "cleanName": "Boopathi Senthi"
+      },
+      {
+        "azureAssignee": "Kartik Waddankeri",
+        "cleanName": "Karthik R"
+      },
+      {
+        "azureAssignee": "Manikandan Durairaj",
+        "cleanName": "Manikandan"
+      },
+      {
+        "azureAssignee": "Aditya Kislay",
+        "cleanName": "Adithya Kislay"
+      },
+      {
+        "azureAssignee": "Dhyanashree T K",
+        "cleanName": "Dhyanashree T K"
+      },
+      {
+        "azureAssignee": "Boopathi S",
+        "cleanName": "Boopathi Senthi"
+      }
+    ],
+    "moduleKeywords": [
+      {
+        "keyword": "ess",
+        "module": "ESS"
+      },
+      {
+        "keyword": "ess configuration",
+        "module": "ESS"
+      },
+      {
+        "keyword": "employee self",
+        "module": "ESS"
+      },
+      {
+        "keyword": "family information",
+        "module": "ESS"
+      },
+      {
+        "keyword": "leave",
+        "module": "Leave"
+      },
+      {
+        "keyword": "shift",
+        "module": "Shiftroster"
+      },
+      {
+        "keyword": "roster",
+        "module": "Shiftroster"
+      },
+      {
+        "keyword": "weekly off",
+        "module": "Shiftroster"
+      },
+      {
+        "keyword": "week off",
+        "module": "Shiftroster"
+      },
+      {
+        "keyword": "holiday",
+        "module": "Shiftroster"
+      }
+    ],
+    "uiKeywords": [
+      "alignment",
+      "align",
+      "spelling",
+      "spell",
+      "label",
+      "tooltip",
+      "tool tip",
+      "placeholder",
+      "icon",
+      "colour",
+      "color",
+      "font",
+      "ui",
+      "ui",
+      "design",
+      "layout",
+      "header",
+      "sort option",
+      "scroll",
+      "hover",
+      "cursor",
+      "spacing",
+      "typo",
+      "caption",
+      "casing",
+      "capital",
+      "overlap",
+      "responsive",
+      "grid header",
+      "look and feel",
+      "text is not",
+      "title is",
+      "heading",
+      "symbol",
+      "pagination",
+      "highlight",
+      "border",
+      "width",
+      "cut off",
+      "truncat"
+    ],
+    "defaultModule": "EDM",
+    "defaultNature": "Functional",
+    "reportModules": [
+      "EDM",
+      "ESS",
+      "Leave",
+      "Shiftroster"
+    ],
+    "reportDevelopers": [
+      "Adithya Kislay",
+      "Boopathi Senthi",
+      "Dhyanashree T K",
+      "Karthik R",
+      "KiranKumar N",
+      "Manikandan",
+      "Raghupavan",
+      "Suresh T",
+      "Vamsi chowdary"
+    ]
+  }
+}

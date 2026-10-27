@@ -7,6 +7,7 @@ import type { BugItem, ReportSummary, PageSummaryRow, AssigneeSummaryRow } from 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const phase5DataPath = path.join(__dirname, '..', 'data', 'phase5-data.json');
+const phase6DataPath = path.join(__dirname, '..', 'data', 'phase6-data.json');
 
 let phase5Cache: any = null;
 function getPhase5Data() {
@@ -23,6 +24,23 @@ function getPhase5Data() {
     }
   }
   return phase5Cache;
+}
+
+let phase6Cache: any = null;
+function getPhase6Data() {
+  if (!phase6Cache) {
+    if (fs.existsSync(phase6DataPath)) {
+      try {
+        phase6Cache = JSON.parse(fs.readFileSync(phase6DataPath, 'utf-8'));
+      } catch (err) {
+        console.error('Error reading phase6-data.json:', err);
+        phase6Cache = { lists: {}, instructions: {}, misc: {}, mapping: {} };
+      }
+    } else {
+      phase6Cache = { lists: {}, instructions: {}, misc: {}, mapping: {} };
+    }
+  }
+  return phase6Cache;
 }
 
 export function buildReportSummary(bugs?: BugItem[]): ReportSummary {
@@ -1355,6 +1373,27 @@ export function getFeedbackData() {
     feedbackList
   };
 }
+
+export function getListsData() {
+  const data = getPhase6Data();
+  return data.lists || {};
+}
+
+export function getInstructionsData() {
+  const data = getPhase6Data();
+  return data.instructions || {};
+}
+
+export function getMiscData() {
+  const data = getPhase6Data();
+  return data.misc || {};
+}
+
+export function getMappingData() {
+  const data = getPhase6Data();
+  return data.mapping || {};
+}
+
 
 
 

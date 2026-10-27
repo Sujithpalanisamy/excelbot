@@ -21,12 +21,52 @@ import {
   getPriorityTasksData,
   getGanttData,
   getCrData,
-  getFeedbackData
+  getFeedbackData,
+  getListsData,
+  getInstructionsData,
+  getMiscData,
+  getMappingData
 } from '../services/report-service.js';
 import { getAllBugs } from '../database/index.js';
 import { excelService } from '../integrations/excel/excel-service.js';
 
 export const reportsRouter = Router();
+
+reportsRouter.get('/lists', (req, res, next) => {
+  try {
+    const data = getListsData();
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
+
+reportsRouter.get('/instructions', (req, res, next) => {
+  try {
+    const data = getInstructionsData();
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
+
+reportsRouter.get('/misc', (req, res, next) => {
+  try {
+    const data = getMiscData();
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
+
+reportsRouter.get('/mapping', (req, res, next) => {
+  try {
+    const data = getMappingData();
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
 
 reportsRouter.get('/page-tracker', (req, res, next) => {
   try {

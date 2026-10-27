@@ -4,6 +4,7 @@ import type {
   ReopenAnalysisData, ModuleQualityData, BugAgingData, ModuleUiVsFunctionalData, PageSummaryData,
   DeveloperScorecardData, QaScorecardData, AssigneeSummaryData,
   PageTrackerData, DeploymentTrackerData, DeploymentHistoryData, PriorityTasksData, GanttData, CrData, FeedbackData,
+  ListsData, InstructionsData, MiscData, MappingData,
   SettingsStatusResponse, SettingsUpdateRequest, ChatResponse 
 } from '../types';
 
@@ -245,6 +246,30 @@ export const api = {
   async getFeedbackData(): Promise<FeedbackData> {
     const res = await fetch(`${API_BASE}/reports/feedback`);
     if (!res.ok) throw new Error('Failed to get feedback data');
+    return res.json();
+  },
+
+  async getListsData(): Promise<ListsData> {
+    const res = await fetch(`${API_BASE}/reports/lists`);
+    if (!res.ok) throw new Error('Failed to get lists data');
+    return res.json();
+  },
+
+  async getInstructionsData(): Promise<InstructionsData> {
+    const res = await fetch(`${API_BASE}/reports/instructions`);
+    if (!res.ok) throw new Error('Failed to get instructions data');
+    return res.json();
+  },
+
+  async getMiscData(): Promise<MiscData> {
+    const res = await fetch(`${API_BASE}/reports/misc`);
+    if (!res.ok) throw new Error('Failed to get misc data');
+    return res.json();
+  },
+
+  async getMappingData(): Promise<MappingData> {
+    const res = await fetch(`${API_BASE}/reports/mapping`);
+    if (!res.ok) throw new Error('Failed to get mapping data');
     return res.json();
   },
 

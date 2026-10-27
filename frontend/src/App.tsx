@@ -30,6 +30,10 @@ import { PriorityTasksSheet } from './components/PriorityTasksSheet';
 import { GanttSheet } from './components/GanttSheet';
 import { CrSheet } from './components/CrSheet';
 import { FeedbackSheet } from './components/FeedbackSheet';
+import { ListsSheet } from './components/ListsSheet';
+import { InstructionsSheet } from './components/InstructionsSheet';
+import { MiscSheet } from './components/MiscSheet';
+import { MappingSheet } from './components/MappingSheet';
 import { AlertTriangle } from 'lucide-react';
 import type { BugItem, SettingsStatusResponse, SummaryDetail, ChatMessage, SettingsUpdateRequest } from './types';
 import { ALL_27_SHEETS } from './types';
@@ -593,12 +597,24 @@ export const App: React.FC = () => {
               if (fType === 'bugId') setSearchQuery(fVal);
             }}
           />
+        ) : activeSheetId === 14 ? (
+          <ListsSheet
+            onDownloadExcel={handleDownloadExcel}
+          />
+        ) : activeSheetId === 15 ? (
+          <InstructionsSheet
+            onDownloadExcel={handleDownloadExcel}
+          />
         ) : activeSheetId === 16 ? (
           <PriorityTasksSheet
             onDownloadExcel={handleDownloadExcel}
           />
         ) : activeSheetId === 17 ? (
           <GanttSheet
+            onDownloadExcel={handleDownloadExcel}
+          />
+        ) : activeSheetId === 18 ? (
+          <MiscSheet
             onDownloadExcel={handleDownloadExcel}
           />
         ) : activeSheetId === 19 ? (
@@ -611,6 +627,10 @@ export const App: React.FC = () => {
           />
         ) : activeSheetId === 21 ? (
           <ReportCatalogSheet />
+        ) : activeSheetId === 22 ? (
+          <MappingSheet
+            onDownloadExcel={handleDownloadExcel}
+          />
         ) : activeSheetId === 23 ? (
           <ModuleUiVsFunctionalSheet
             onDownloadExcel={handleDownloadExcel}
@@ -666,8 +686,7 @@ export const App: React.FC = () => {
                 Step-by-Step Transition Plan:
               </div>
               <p>
-                We are building each of the 27 Excel sheets directly inside this application one by one.
-                Currently, <strong>23 sheets</strong> (Sheets 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16, 17, 19, 20, 21, 23, 24, 25, 26, 27) are live with full real-time data calculations and drill-downs.
+                <strong>100% Complete!</strong> All <strong>27 sheets</strong> of the Development & QA Accuracy Tracker are fully built, interactive, and connected to real-time calculations and drill-downs.
               </p>
             </div>
             <button

@@ -174,15 +174,15 @@ export const ALL_27_SHEETS: ExcelSheetDef[] = [
   { id: 11, name: "QA Scorecard", category: 'scorecards', description: "QA testing volume, accuracy, and defect detection rate", status: 'active' },
   { id: 12, name: "Module Quality", category: 'analytics', description: "Defect density matrix per HRMS module", status: 'active' },
   { id: 13, name: "Bug Aging", category: 'analytics', description: "Aging duration calculation for unresolved bugs", status: 'active' },
-  { id: 14, name: "Lists", category: 'rules', description: "Master dropdowns (Severities, Priorities, States, Complexity)", status: 'planned' },
-  { id: 15, name: "Instructions", category: 'rules', description: "Guide on how to navigate and use the workbook", status: 'planned' },
+  { id: 14, name: "Lists", category: 'rules', description: "Master dropdowns (Severities, Priorities, States, Complexity)", status: 'active' },
+  { id: 15, name: "Instructions", category: 'rules', description: "Guide on how to navigate and use the workbook", status: 'active' },
   { id: 16, name: "Priority tasks", category: 'release', description: "Priority QA tasks, blockers, and notes", status: 'active' },
   { id: 17, name: "Gantt", category: 'release', description: "Basic module & page delivery timeline", status: 'active' },
-  { id: 18, name: "miscellaneous", category: 'rules', description: "Miscellaneous notes and admin fields", status: 'planned' },
+  { id: 18, name: "miscellaneous", category: 'rules', description: "Miscellaneous notes and admin fields", status: 'active' },
   { id: 19, name: "CR", category: 'release', description: "Change Request (CR) register", status: 'active' },
   { id: 20, name: "Feedback", category: 'release', description: "Feedback notes and review points", status: 'active' },
   { id: 21, name: "Reports", category: 'dashboard', description: "Module reports catalog", status: 'active' },
-  { id: 22, name: "Mapping", category: 'rules', description: "Auto-classification rules (keywords -> Page names)", status: 'planned' },
+  { id: 22, name: "Mapping", category: 'rules', description: "Auto-classification rules (keywords -> Page names)", status: 'active' },
   { id: 23, name: "Module UI vs Functional", category: 'analytics', description: "Auto-calculated UI vs Functional defect ratio", status: 'active' },
   { id: 24, name: "Pending With Developer", category: 'core', description: "Filtered view of bugs in New / Approved / Committed states", status: 'active' },
   { id: 25, name: "Page Summary", category: 'analytics', description: "Summary of bugs aggregated by Page / Module", status: 'active' },
@@ -689,5 +689,69 @@ export interface FeedbackData {
   modules: string[];
   feedbackList: FeedbackItem[];
 }
+
+export interface ListsData {
+  complexities: string[];
+  pageStatuses: string[];
+  severities: string[];
+  priorities: string[];
+  bugStatuses: string[];
+  rootCauses: string[];
+  components: string[];
+  bugTypes: string[];
+  developers: string[];
+  qaTeam: string[];
+  sprints: string[];
+}
+
+export interface InstructionStep {
+  step: string;
+  guidance: string;
+}
+
+export interface ColorCodeItem {
+  role: string;
+  code: string;
+  desc: string;
+}
+
+export interface InstructionsData {
+  title: string;
+  steps: InstructionStep[];
+  colorCodes: ColorCodeItem[];
+  rules: string[];
+}
+
+export interface MiscItem {
+  item: string;
+  notes: string;
+}
+
+export interface MiscData {
+  nurtureManage: MiscItem[];
+  pwAdmin: MiscItem[];
+  fields: MiscItem[];
+}
+
+export interface DeveloperMappingItem {
+  azureAssignee: string;
+  cleanName: string;
+}
+
+export interface ModuleKeywordItem {
+  keyword: string;
+  module: string;
+}
+
+export interface MappingData {
+  developerMappings: DeveloperMappingItem[];
+  moduleKeywords: ModuleKeywordItem[];
+  uiKeywords: string[];
+  defaultModule: string;
+  defaultNature: string;
+  reportModules: string[];
+  reportDevelopers: string[];
+}
+
 
 
