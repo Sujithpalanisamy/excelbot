@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  FileSpreadsheet, 
   Download, 
   Printer, 
   CalendarRange, 
@@ -15,12 +14,10 @@ import type { GanttData } from '../types';
 import { api } from '../services/api';
 
 interface GanttSheetProps {
-  onDownloadExcel: () => void;
+  onDownloadExcel?: () => void;
 }
 
-export const GanttSheet: React.FC<GanttSheetProps> = ({
-  onDownloadExcel,
-}) => {
+export const GanttSheet: React.FC<GanttSheetProps> = () => {
   const [data, setData] = useState<GanttData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -140,13 +137,7 @@ export const GanttSheet: React.FC<GanttSheetProps> = ({
             <Printer className="w-3.5 h-3.5 text-slate-600" />
             <span>Print</span>
           </button>
-          <button
-            onClick={onDownloadExcel}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-[#107c41] hover:bg-[#0b5c30] rounded shadow-xs transition-colors"
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5" />
-            <span>Download Master .XLSX</span>
-          </button>
+
         </div>
       </div>
 

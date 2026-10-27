@@ -2,7 +2,6 @@ import React from 'react';
 import { 
   Settings, 
   FileSpreadsheet, 
-  Download, 
   RefreshCw,
   Layers
 } from 'lucide-react';
@@ -12,8 +11,9 @@ interface NavbarProps {
   settings: SettingsStatusResponse | null;
   onOpenSettings: () => void;
   onOpenReport: () => void;
-  onExportExcel: () => void;
-  onDownloadExcel: () => void;
+  onExportExcel?: () => void;
+  onDownloadExcel?: () => void;
+  onExportAndDownload?: () => void;
   onSyncNow?: () => void;
   isSyncing?: boolean;
   lastSyncInfo?: string;
@@ -26,6 +26,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenReport,
   onExportExcel,
   onDownloadExcel,
+  onExportAndDownload,
   onSyncNow,
   isSyncing = false,
   lastSyncInfo,
@@ -112,28 +113,21 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
 
-          {/* Export to Excel */}
+          {/* 1-Click Export & Download .xlsx */}
           <button
-            id="btn-export-excel"
+            id="btn-export-download-excel"
             type="button"
-            onClick={onExportExcel}
+            onClick={onExportAndDownload || onDownloadExcel || onExportExcel}
             disabled={isExporting}
-            className="h-9 btn-sky inline-flex items-center gap-1.5 px-3.5 text-xs font-semibold rounded-lg transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:outline-none shrink-0"
+            className="h-9 btn-sky inline-flex items-center gap-1.5 px-3.5 text-xs font-semibold rounded-lg transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:outline-none shrink-0 disabled:opacity-60 shadow-2xs"
+            title="Generate latest data and download full 27-sheet Excel workbook to your computer"
           >
-            <FileSpreadsheet className="w-3.5 h-3.5" aria-hidden="true" />
-            <span>{isExporting ? 'Exporting...' : 'Export Excel'}</span>
-          </button>
-
-          {/* Download Workbook */}
-          <button
-            id="btn-download-excel"
-            type="button"
-            onClick={onDownloadExcel}
-            className="h-9 btn-secondary inline-flex items-center gap-1.5 px-3.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:outline-none shrink-0"
-            title="Download the primary Excel workbook"
-          >
-            <Download className="w-3.5 h-3.5 text-slate-600" aria-hidden="true" />
-            <span className="hidden sm:inline">Download</span>
+            {isExporting ? (
+              <RefreshCw className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+            ) : (
+              <FileSpreadsheet className="w-3.5 h-3.5" aria-hidden="true" />
+            )}
+            <span>{isExporting ? 'Generating Excel...' : 'Export & Download .xlsx'}</span>
           </button>
 
           {/* QA Report */}

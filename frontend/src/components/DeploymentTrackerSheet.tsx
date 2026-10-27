@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  FileSpreadsheet, 
   Download, 
   Printer, 
   Rocket, 
@@ -16,12 +15,11 @@ import { api } from '../services/api';
 
 interface DeploymentTrackerSheetProps {
   onNavigateToSheet1WithFilter?: (filterType: string, filterValue: string) => void;
-  onDownloadExcel: () => void;
+  onDownloadExcel?: () => void;
 }
 
 export const DeploymentTrackerSheet: React.FC<DeploymentTrackerSheetProps> = ({
   onNavigateToSheet1WithFilter,
-  onDownloadExcel,
 }) => {
   const [data, setData] = useState<DeploymentTrackerData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -125,13 +123,6 @@ export const DeploymentTrackerSheet: React.FC<DeploymentTrackerSheetProps> = ({
           >
             <Printer className="w-3.5 h-3.5 text-slate-600" />
             <span>Print</span>
-          </button>
-          <button
-            onClick={onDownloadExcel}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-[#107c41] hover:bg-[#0b5c30] rounded shadow-xs transition-colors"
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5" />
-            <span>Download Master .XLSX</span>
           </button>
         </div>
       </div>

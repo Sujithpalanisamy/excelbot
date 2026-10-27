@@ -10,12 +10,11 @@ import type { BugItem } from '../types';
 
 interface ExecutiveReportSheetProps {
   allBugs: BugItem[];
-  onDownloadExcel: () => void;
+  onDownloadExcel?: () => void;
 }
 
 export const ExecutiveReportSheet: React.FC<ExecutiveReportSheetProps> = ({
   allBugs,
-  onDownloadExcel,
 }) => {
   const [searchFilter, setSearchFilter] = useState('');
 
@@ -94,14 +93,7 @@ export const ExecutiveReportSheet: React.FC<ExecutiveReportSheetProps> = ({
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <button
-            type="button"
-            onClick={onDownloadExcel}
-            className="h-9 btn-secondary inline-flex items-center gap-1.5 px-3.5 text-xs font-semibold rounded-md shadow-2xs text-slate-700 hover:text-sky-700 hover:border-sky-300 transition-colors cursor-pointer"
-          >
-            <Download className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Download Full Excel</span>
-          </button>
+
           <button
             type="button"
             onClick={handlePrint}

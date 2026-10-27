@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  FileSpreadsheet, 
-  Download, 
+import {
+Download, 
   Printer, 
   FolderKanban, 
   Search, 
@@ -14,11 +13,10 @@ import type { MiscData } from '../types';
 import { api } from '../services/api';
 
 interface MiscSheetProps {
-  onDownloadExcel: () => void;
+  onDownloadExcel?: () => void;
 }
 
 export const MiscSheet: React.FC<MiscSheetProps> = ({
-  onDownloadExcel,
 }) => {
   const [data, setData] = useState<MiscData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -127,13 +125,7 @@ export const MiscSheet: React.FC<MiscSheetProps> = ({
             <Printer className="w-3.5 h-3.5 text-slate-600" />
             <span>Print</span>
           </button>
-          <button
-            onClick={onDownloadExcel}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-[#107c41] hover:bg-[#0b5c30] rounded shadow-xs transition-colors"
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5" />
-            <span>Download Master .XLSX</span>
-          </button>
+
         </div>
       </div>
 

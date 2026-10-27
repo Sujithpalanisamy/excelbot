@@ -187,23 +187,21 @@ export const App: React.FC = () => {
     }
   };
 
-  // Export to Excel handler
-  const handleExportExcel = async () => {
+  // 1-Click Export & Download Excel handler
+  const handleExportAndDownload = async () => {
     setIsExporting(true);
     try {
-      const res = await api.exportToExcel();
-      alert(`Excel Export Successful!\nSaved to: ${res.excel_path}\nTotal Bugs: ${res.total_bugs}`);
+      await api.exportToExcel();
+      window.open(api.getExcelDownloadUrl(), '_blank');
     } catch (err: any) {
-      alert(`Failed to export Excel: ${err.message}`);
+      alert(`Failed to export and download Excel: ${err.message}`);
     } finally {
       setIsExporting(false);
     }
   };
 
-  // Download Excel handler
-  const handleDownloadExcel = () => {
-    window.open(api.getExcelDownloadUrl(), '_blank');
-  };
+  // Download Excel handler (alias)
+  const handleDownloadExcel = handleExportAndDownload;
 
   // Save Settings handler
   const handleSaveSettings = async (updated: SettingsUpdateRequest) => {
@@ -306,8 +304,9 @@ export const App: React.FC = () => {
         settings={settings}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenReport={() => setIsReportOpen(true)}
-        onExportExcel={handleExportExcel}
-        onDownloadExcel={handleDownloadExcel}
+        onExportAndDownload={handleExportAndDownload}
+        onExportExcel={handleExportAndDownload}
+        onDownloadExcel={handleExportAndDownload}
         onSyncNow={handleSyncNow}
         isSyncing={isSyncing}
         lastSyncInfo={lastSyncInfo}

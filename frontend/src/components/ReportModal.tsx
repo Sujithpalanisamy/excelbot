@@ -15,7 +15,7 @@ import { api } from '../services/api';
 interface ReportModalProps {
   onClose: () => void;
   allBugs: BugItem[];
-  onDownloadExcel: () => void;
+  onDownloadExcel?: () => void;
 }
 
 export const ReportModal: React.FC<ReportModalProps> = ({

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  FileSpreadsheet, 
+  FileSpreadsheet,
   Download, 
   Printer, 
   Search, 
@@ -19,12 +19,11 @@ import { api } from '../services/api';
 
 interface BugLifecycleSheetProps {
   onNavigateToSheet1WithFilter?: (filterType: string, filterValue: string) => void;
-  onDownloadExcel: () => void;
+  onDownloadExcel?: () => void;
 }
 
 export const BugLifecycleSheet: React.FC<BugLifecycleSheetProps> = ({
   onNavigateToSheet1WithFilter,
-  onDownloadExcel,
 }) => {
   const [data, setData] = useState<BugLifecycleData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -130,14 +129,6 @@ export const BugLifecycleSheet: React.FC<BugLifecycleSheetProps> = ({
             <span>Export CSV</span>
           </button>
 
-          <button
-            type="button"
-            onClick={onDownloadExcel}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#1b365d] hover:bg-[#152a4a] text-white rounded font-semibold text-xs transition-colors shadow-2xs"
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5" />
-            <span>Download Full .xlsx</span>
-          </button>
 
           <button
             type="button"

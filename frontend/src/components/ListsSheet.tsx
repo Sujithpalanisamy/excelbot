@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  FileSpreadsheet, 
-  Download, 
+import {
+Download, 
   Printer, 
   ListFilter, 
   Search, 
@@ -15,11 +14,10 @@ import type { ListsData } from '../types';
 import { api } from '../services/api';
 
 interface ListsSheetProps {
-  onDownloadExcel: () => void;
+  onDownloadExcel?: () => void;
 }
 
 export const ListsSheet: React.FC<ListsSheetProps> = ({
-  onDownloadExcel,
 }) => {
   const [data, setData] = useState<ListsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -138,13 +136,7 @@ export const ListsSheet: React.FC<ListsSheetProps> = ({
             <Printer className="w-3.5 h-3.5 text-slate-600" />
             <span>Print</span>
           </button>
-          <button
-            onClick={onDownloadExcel}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-[#107c41] hover:bg-[#0b5c30] rounded shadow-xs transition-colors"
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5" />
-            <span>Download Master .XLSX</span>
-          </button>
+
         </div>
       </div>
 
