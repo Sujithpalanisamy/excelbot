@@ -20,6 +20,7 @@ import {
 } from 'recharts';
 import type { ModuleQualityData } from '../types';
 import { api } from '../services/api';
+import { Pagination } from './Pagination';
 
 interface ModuleQualitySheetProps {
   onNavigateToSheet1WithFilter?: (filterType: string, filterValue: string) => void;
@@ -31,6 +32,8 @@ export const ModuleQualitySheet: React.FC<ModuleQualitySheetProps> = ({
 }) => {
   const [data, setData] = useState<ModuleQualityData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
 
   useEffect(() => {
     let isMounted = true;
@@ -223,7 +226,7 @@ export const ModuleQualitySheet: React.FC<ModuleQualitySheetProps> = ({
               </tr>
             </thead>
             <tbody>
-              {data.rows.map((r, idx) => {
+              {data.rows.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((r, idx) => {
                 const accVal = parseFloat(r.moduleAccuracy);
                 let accClass = "text-emerald-700 font-bold";
                 if (accVal < 80) accClass = "text-rose-700 font-bold bg-rose-50";
@@ -332,6 +335,18 @@ export const ModuleQualitySheet: React.FC<ModuleQualitySheetProps> = ({
             </tbody>
           </table>
         </div>
+
+        <Pagination
+          currentPage={currentPage}
+          totalItems={data.rows.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(newSize) => {
+            setPageSize(newSize);
+            setCurrentPage(1);
+          }}
+          pageSizeOptions={[5, 10, 20, 50]}
+        />
 
         {/* Formula breakdown and quality index info */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">

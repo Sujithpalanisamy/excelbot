@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import type { MappingData } from '../types';
 import { api } from '../services/api';
+import { Pagination } from './Pagination';
 
 interface MappingSheetProps {
   onDownloadExcel?: () => void;
@@ -23,6 +24,10 @@ export const MappingSheet: React.FC<MappingSheetProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeSection, setActiveSection] = useState<'all' | 'devs' | 'modules' | 'ui'>('all');
+  const [devPage, setDevPage] = useState<number>(1);
+  const [devPageSize, setDevPageSize] = useState<number>(10);
+  const [modPage, setModPage] = useState<number>(1);
+  const [modPageSize, setModPageSize] = useState<number>(10);
 
   useEffect(() => {
     let isMounted = true;
@@ -179,7 +184,11 @@ export const MappingSheet: React.FC<MappingSheetProps> = ({
       <div className="bg-white p-3 border border-slate-300 rounded shadow-2xs flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center bg-slate-100 p-0.5 rounded border border-slate-200 text-xs">
           <button
-            onClick={() => setActiveSection('all')}
+            onClick={() => {
+              setActiveSection('all');
+              setDevPage(1);
+              setModPage(1);
+            }}
             className={`px-3 py-1 rounded font-medium transition-colors ${
               activeSection === 'all' ? 'bg-white text-slate-900 shadow-2xs font-semibold' : 'text-slate-600 hover:text-slate-900'
             }`}
@@ -187,7 +196,10 @@ export const MappingSheet: React.FC<MappingSheetProps> = ({
             All Rules
           </button>
           <button
-            onClick={() => setActiveSection('devs')}
+            onClick={() => {
+              setActiveSection('devs');
+              setDevPage(1);
+            }}
             className={`px-3 py-1 rounded font-medium transition-colors ${
               activeSection === 'devs' ? 'bg-white text-slate-900 shadow-2xs font-semibold' : 'text-slate-600 hover:text-slate-900'
             }`}
@@ -195,7 +207,10 @@ export const MappingSheet: React.FC<MappingSheetProps> = ({
             Developers ({data.developerMappings.length})
           </button>
           <button
-            onClick={() => setActiveSection('modules')}
+            onClick={() => {
+              setActiveSection('modules');
+              setModPage(1);
+            }}
             className={`px-3 py-1 rounded font-medium transition-colors ${
               activeSection === 'modules' ? 'bg-white text-slate-900 shadow-2xs font-semibold' : 'text-slate-600 hover:text-slate-900'
             }`}
@@ -218,7 +233,11 @@ export const MappingSheet: React.FC<MappingSheetProps> = ({
             type="text"
             placeholder="Search keyword, assignee, or module..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setDevPage(1);
+              setModPage(1);
+            }}
             className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-300 rounded focus:outline-hidden focus:border-blue-500"
           />
         </div>
@@ -245,7 +264,7 @@ export const MappingSheet: React.FC<MappingSheetProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {filteredDevs.map((d, idx) => (
+                  {filteredDevs.slice((devPage - 1) * devPageSize, devPage * devPageSize).map((d, idx) => (
                     <tr key={idx} className="hover:bg-blue-50/60 transition-colors text-slate-800 even:bg-slate-50/50">
                       <td className="py-2 px-3 border-r border-slate-200 font-mono text-slate-600">
                         {d.azureAssignee}
@@ -258,6 +277,18 @@ export const MappingSheet: React.FC<MappingSheetProps> = ({
                 </tbody>
               </table>
             </div>
+
+            <Pagination
+              currentPage={devPage}
+              totalItems={filteredDevs.length}
+              pageSize={devPageSize}
+              onPageChange={setDevPage}
+              onPageSizeChange={(newSize) => {
+                setDevPageSize(newSize);
+                setDevPage(1);
+              }}
+              pageSizeOptions={[5, 10, 20, 50]}
+            />
           </div>
         )}
 
@@ -280,7 +311,7 @@ export const MappingSheet: React.FC<MappingSheetProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {filteredModules.map((m, idx) => (
+                  {filteredModules.slice((modPage - 1) * modPageSize, modPage * modPageSize).map((m, idx) => (
                     <tr key={idx} className="hover:bg-blue-50/60 transition-colors text-slate-800 even:bg-slate-50/50">
                       <td className="py-2 px-3 border-r border-slate-200 font-mono text-slate-600">
                         "{m.keyword}"
@@ -295,6 +326,18 @@ export const MappingSheet: React.FC<MappingSheetProps> = ({
                 </tbody>
               </table>
             </div>
+
+            <Pagination
+              currentPage={modPage}
+              totalItems={filteredModules.length}
+              pageSize={modPageSize}
+              onPageChange={setModPage}
+              onPageSizeChange={(newSize) => {
+                setModPageSize(newSize);
+                setModPage(1);
+              }}
+              pageSizeOptions={[5, 10, 20, 50]}
+            />
           </div>
         )}
 

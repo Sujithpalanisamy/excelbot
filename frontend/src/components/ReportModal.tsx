@@ -159,11 +159,11 @@ export const ReportModal: React.FC<ReportModalProps> = ({
             <span className="text-xl font-bold font-display tabular-nums text-slate-900">{total}</span>
           </div>
           <div className="p-3 rounded-lg bg-sky-50/60 border border-sky-200">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-sky-800 block mb-0.5">Open / New</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-sky-800 block mb-0.5">New</span>
             <span className="text-xl font-bold font-display tabular-nums text-sky-700">{openCount}</span>
           </div>
           <div className="p-3 rounded-lg bg-amber-50/60 border border-amber-200">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 block mb-0.5">Active</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 block mb-0.5">Committed</span>
             <span className="text-xl font-bold font-display tabular-nums text-amber-700">{activeCount}</span>
           </div>
           <div className="p-3 rounded-lg bg-rose-50/60 border border-rose-200">

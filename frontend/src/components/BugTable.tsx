@@ -513,8 +513,8 @@ export const BugTable: React.FC<BugTableProps> = ({
           <div className="flex items-center gap-2 text-sky-900">
             <span className="font-semibold text-slate-700">Active Metric Filter:</span>
             <span className="px-2.5 py-0.5 rounded-full bg-white border border-sky-200 font-bold text-sky-800 text-[11px] shadow-2xs">
-              {activeMetricFilter === 'open' && 'Open / New'}
-              {activeMetricFilter === 'active' && 'Active / Committed / Approved'}
+              {activeMetricFilter === 'open' && 'New'}
+              {activeMetricFilter === 'active' && 'Committed'}
               {activeMetricFilter === 'critical' && 'Critical & High Severity'}
               {activeMetricFilter === 'closed' && 'Resolved & Closed (Done)'}
             </span>

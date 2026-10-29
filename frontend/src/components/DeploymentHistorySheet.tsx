@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import type { DeploymentHistoryData } from '../types';
 import { api } from '../services/api';
+import { Pagination } from './Pagination';
 
 interface DeploymentHistorySheetProps {
   onNavigateToSheet1WithFilter?: (filterType: string, filterValue: string) => void;
@@ -24,6 +25,8 @@ export const DeploymentHistorySheet: React.FC<DeploymentHistorySheetProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [filterQaStatus, setFilterQaStatus] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(25);
 
   useEffect(() => {
     let isMounted = true;
@@ -86,6 +89,8 @@ export const DeploymentHistorySheet: React.FC<DeploymentHistorySheetProps> = ({
 
     return matchesSearch && matchesType && matchesQa;
   });
+
+  const paginatedHistory = filteredHistory.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const uniqueQaStatuses = Array.from(new Set(data.history.map(h => h.qaStatus).filter(Boolean)));
   const bugCount = data.history.filter(h => h.type.toLowerCase() === 'bug').length;
@@ -254,7 +259,7 @@ export const DeploymentHistorySheet: React.FC<DeploymentHistorySheetProps> = ({
                   </td>
                 </tr>
               ) : (
-                filteredHistory.map((h, idx) => {
+                paginatedHistory.map((h, idx) => {
                   const isBug = h.type.toLowerCase() === 'bug';
                   const isClosed = (h.status || '').toLowerCase().includes('closed');
 
@@ -350,6 +355,16 @@ export const DeploymentHistorySheet: React.FC<DeploymentHistorySheetProps> = ({
             </tfoot>
           </table>
         </div>
+
+        {/* Pagination Bar */}
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredHistory.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          pageSizeOptions={[15, 25, 50, 100]}
+        />
       </div>
     </div>
   );

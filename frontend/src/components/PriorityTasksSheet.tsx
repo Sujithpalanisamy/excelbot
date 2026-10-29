@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import type { PriorityTasksData } from '../types';
 import { api } from '../services/api';
+import { Pagination } from './Pagination';
 
 interface PriorityTasksSheetProps {
   onDownloadExcel?: () => void;
@@ -22,6 +23,8 @@ export const PriorityTasksSheet: React.FC<PriorityTasksSheetProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(25);
 
   useEffect(() => {
     let isMounted = true;
@@ -171,7 +174,10 @@ export const PriorityTasksSheet: React.FC<PriorityTasksSheetProps> = ({
             type="text"
             placeholder="Search task name or notes..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-300 rounded focus:outline-hidden focus:border-blue-500"
           />
         </div>
@@ -180,7 +186,10 @@ export const PriorityTasksSheet: React.FC<PriorityTasksSheetProps> = ({
           <label className="text-xs text-slate-600 font-medium">Status Filter:</label>
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setCurrentPage(1);
+            }}
             className="text-xs border border-slate-300 rounded px-2.5 py-1.5 bg-white text-slate-700 focus:outline-hidden"
           >
             <option value="all">All Items ({data.totalTasks})</option>
@@ -195,6 +204,7 @@ export const PriorityTasksSheet: React.FC<PriorityTasksSheetProps> = ({
             onClick={() => {
               setSearchTerm('');
               setStatusFilter('all');
+              setCurrentPage(1);
             }}
             className="text-xs text-blue-600 hover:text-blue-800 underline font-medium"
           >
@@ -232,7 +242,7 @@ export const PriorityTasksSheet: React.FC<PriorityTasksSheetProps> = ({
                   </td>
                 </tr>
               ) : (
-                filteredTasks.map((t, idx) => {
+                filteredTasks.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((t, idx) => {
                   const noteLower = (t.notes || '').toLowerCase().trim();
                   const isDone = noteLower === 'done';
                   const isBkDone = noteLower.includes('bk done');
@@ -292,6 +302,18 @@ export const PriorityTasksSheet: React.FC<PriorityTasksSheetProps> = ({
             </tfoot>
           </table>
         </div>
+
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredTasks.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(newSize) => {
+            setPageSize(newSize);
+            setCurrentPage(1);
+          }}
+          pageSizeOptions={[10, 25, 50, 100]}
+        />
       </div>
     </div>
   );

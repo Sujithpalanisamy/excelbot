@@ -219,6 +219,40 @@ export const api = {
     return res.json();
   },
 
+  async addDeployment(payload: {
+    deployment_date: string;
+    type?: string;
+    item_name: string;
+    developers?: string;
+    severity?: string;
+    priority?: string;
+    status?: string;
+    qa_status?: string;
+    environment?: string;
+    notes?: string;
+    bugs_count?: number;
+    tasks_count?: number;
+  }): Promise<{ success: boolean; deployment: any }> {
+    const res = await fetch(`${API_BASE}/reports/deployments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Failed to add deployment' }));
+      throw new Error(err.error || 'Failed to add deployment');
+    }
+    return res.json();
+  },
+
+  async deleteDeployment(id: number): Promise<{ success: boolean }> {
+    const res = await fetch(`${API_BASE}/reports/deployments/${id}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) throw new Error('Failed to delete deployment');
+    return res.json();
+  },
+
   async getDeploymentHistoryData(): Promise<DeploymentHistoryData> {
     const res = await fetch(`${API_BASE}/reports/deployment-history`);
     if (!res.ok) throw new Error('Failed to get deployment history data');

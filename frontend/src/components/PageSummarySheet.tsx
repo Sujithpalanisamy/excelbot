@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import type { PageSummaryData } from '../types';
 import { api } from '../services/api';
+import { Pagination } from './Pagination';
 
 interface PageSummarySheetProps {
   onNavigateToSheet1WithFilter?: (filterType: string, filterValue: string) => void;
@@ -21,6 +22,8 @@ export const PageSummarySheet: React.FC<PageSummarySheetProps> = ({
   const [data, setData] = useState<PageSummaryData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(25);
 
   useEffect(() => {
     let isMounted = true;
@@ -75,6 +78,8 @@ export const PageSummarySheet: React.FC<PageSummarySheetProps> = ({
   const filteredRows = data.rows.filter(r => 
     !searchTerm || r.page_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const paginatedRows = filteredRows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
     <div className="space-y-4">
@@ -211,7 +216,7 @@ export const PageSummarySheet: React.FC<PageSummarySheetProps> = ({
               </tr>
             </thead>
             <tbody>
-              {filteredRows.map((r, idx) => (
+              {paginatedRows.map((r, idx) => (
                 <tr key={idx} className="hover:bg-slate-50 transition-colors">
                   <td className="py-2 px-3 border border-slate-300 font-medium text-slate-900 bg-[#d9e1f2]">
                     <button
@@ -302,6 +307,16 @@ export const PageSummarySheet: React.FC<PageSummarySheetProps> = ({
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Bar */}
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredRows.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          pageSizeOptions={[10, 20, 50, 100]}
+        />
 
       </div>
     </div>

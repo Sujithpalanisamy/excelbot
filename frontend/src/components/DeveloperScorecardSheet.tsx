@@ -19,6 +19,7 @@ import {
 } from 'recharts';
 import type { DeveloperScorecardData } from '../types';
 import { api } from '../services/api';
+import { Pagination } from './Pagination';
 
 interface DeveloperScorecardSheetProps {
   onNavigateToSheet1WithFilter?: (filterType: string, filterValue: string) => void;
@@ -30,6 +31,8 @@ export const DeveloperScorecardSheet: React.FC<DeveloperScorecardSheetProps> = (
 }) => {
   const [data, setData] = useState<DeveloperScorecardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
 
   useEffect(() => {
     let isMounted = true;
@@ -80,6 +83,8 @@ export const DeveloperScorecardSheet: React.FC<DeveloperScorecardSheetProps> = (
       </div>
     );
   }
+
+  const paginatedRows = data.rows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
     <div className="space-y-4">
@@ -234,7 +239,7 @@ export const DeveloperScorecardSheet: React.FC<DeveloperScorecardSheetProps> = (
               </tr>
             </thead>
             <tbody>
-              {data.rows.map((r, idx) => {
+              {paginatedRows.map((r, idx) => {
                 const devAccNum = parseFloat(r.developmentAccuracy) || 0;
                 const fixAccNum = parseFloat(r.fixAccuracy) || 0;
                 const finalNum = parseFloat(r.finalScore) || 0;
@@ -397,6 +402,16 @@ export const DeveloperScorecardSheet: React.FC<DeveloperScorecardSheetProps> = (
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Bar */}
+        <Pagination
+          currentPage={currentPage}
+          totalItems={data.rows.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          pageSizeOptions={[5, 10, 20]}
+        />
 
         {/* Evaluation Methodology Note */}
         <div className="bg-slate-50 border border-slate-200 p-3 rounded text-xs text-slate-600 space-y-1">

@@ -21,6 +21,7 @@ import {
 } from 'recharts';
 import type { BugAgingData } from '../types';
 import { api } from '../services/api';
+import { Pagination } from './Pagination';
 
 interface BugAgingSheetProps {
   onNavigateToSheet1WithFilter?: (filterType: string, filterValue: string) => void;
@@ -35,6 +36,8 @@ export const BugAgingSheet: React.FC<BugAgingSheetProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBucket, setSelectedBucket] = useState<string>('all');
   const [selectedSeverity, setSelectedSeverity] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(25);
 
   useEffect(() => {
     let isMounted = true;
@@ -99,6 +102,8 @@ export const BugAgingSheet: React.FC<BugAgingSheetProps> = ({
 
     return matchesSearch && matchesBucket && matchesSeverity;
   });
+
+  const paginatedItems = filteredItems.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const getBucketBadgeStyle = (bucket: string) => {
     switch (bucket) {
@@ -316,7 +321,7 @@ export const BugAgingSheet: React.FC<BugAgingSheetProps> = ({
               </tr>
             </thead>
             <tbody>
-              {filteredItems.map((b) => (
+              {paginatedItems.map((b) => (
                 <tr key={b.bug_id} className="hover:bg-slate-50 transition-colors">
                   <td className="py-1.5 px-3 border border-slate-300 font-mono text-xs font-bold text-[#1b365d]">
                     <button
@@ -381,6 +386,16 @@ export const BugAgingSheet: React.FC<BugAgingSheetProps> = ({
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Bar */}
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredItems.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          pageSizeOptions={[25, 50, 100, 200]}
+        />
 
       </div>
     </div>

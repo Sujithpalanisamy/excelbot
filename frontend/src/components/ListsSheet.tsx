@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Download,
   Printer,
@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import type { ListsData } from '../types';
 import { api } from '../services/api';
+import { Pagination } from './Pagination';
 
 interface ListsSheetProps {
   onDownloadExcel?: () => void;
@@ -22,6 +23,8 @@ export const ListsSheet: React.FC<ListsSheetProps> = ({
   const [data, setData] = useState<ListsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(25);
 
   useEffect(() => {
     let isMounted = true;
@@ -107,6 +110,17 @@ export const ListsSheet: React.FC<ListsSheetProps> = ({
     { title: 'Sprint', values: data.sprints, color: 'text-blue-600' }
   ];
 
+  const filteredRowIndices = useMemo(() => {
+    const all = Array.from({ length: maxRows }, (_, i) => i);
+    if (!searchTerm.trim()) return all;
+    const q = searchTerm.toLowerCase();
+    return all.filter((rIdx) => columns.some((col) => (col.values[rIdx] || '').toLowerCase().includes(q)));
+  }, [maxRows, searchTerm, columns]);
+
+  const paginatedRowIndices = useMemo(() => {
+    return filteredRowIndices.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  }, [filteredRowIndices, currentPage, pageSize]);
+
   return (
     <div className="space-y-4">
       {/* Top Banner & Control Bar */}
@@ -187,13 +201,19 @@ export const ListsSheet: React.FC<ListsSheetProps> = ({
             type="text"
             placeholder="Search any master value (e.g. Critical, KiranKumar, Sprint 4)..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-300 rounded focus:outline-hidden focus:border-blue-500"
           />
         </div>
         {searchTerm && (
           <button
-            onClick={() => setSearchTerm('')}
+            onClick={() => {
+              setSearchTerm('');
+              setCurrentPage(1);
+            }}
             className="text-xs text-blue-600 hover:text-blue-800 underline font-medium"
           >
             Clear Search
@@ -225,7 +245,7 @@ export const ListsSheet: React.FC<ListsSheetProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {Array.from({ length: maxRows }).map((_, rIdx) => (
+              {paginatedRowIndices.map((rIdx) => (
                 <tr 
                   key={rIdx}
                   className="hover:bg-blue-50/60 transition-colors group text-slate-700 even:bg-slate-50/50"
@@ -264,6 +284,18 @@ export const ListsSheet: React.FC<ListsSheetProps> = ({
             </tfoot>
           </table>
         </div>
+
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredRowIndices.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(newSize) => {
+            setPageSize(newSize);
+            setCurrentPage(1);
+          }}
+          pageSizeOptions={[10, 25, 50, 100]}
+        />
       </div>
     </div>
   );

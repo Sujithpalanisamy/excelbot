@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { getAllBugs } from '../database/index.js';
+import { getAllBugs, getAllCustomDeployments } from '../database/index.js';
 import type { BugItem, ReportSummary, PageSummaryRow, AssigneeSummaryRow } from '../types/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -234,8 +234,149 @@ export function buildReportSummary(bugs?: BugItem[]): ReportSummary {
   };
 }
 
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+export function formatDeploymentDate(isoStr: string): string {
+  if (!isoStr) return '';
+  const d = new Date(isoStr);
+  if (isNaN(d.getTime())) return isoStr.slice(0, 10);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = MONTH_NAMES[d.getMonth()];
+  const year = d.getFullYear();
+  return `${day}-${month}-${year}`;
+}
+
+export function computeDeploymentSummary(bugs?: BugItem[]) {
+  const allBugs = bugs || getAllBugs();
+  const customList = getAllCustomDeployments();
+
+  // Baseline dates from the original Excel snapshot (03-Jul-2026 to 05-Oct-2026)
+  const dateMap = new Map<string, { date: string; bugsDeployed: number; tasksDeployed: number; total: number }>();
+
+  const baseDates = [
+    { date: '03-Jul-2026', bugsDeployed: 2, tasksDeployed: 34, total: 36 },
+    { date: '10-Jul-2026', bugsDeployed: 57, tasksDeployed: 5, total: 62 },
+    { date: '17-Jul-2026', bugsDeployed: 58, tasksDeployed: 14, total: 72 },
+    { date: '21-Jul-2026', bugsDeployed: 42, tasksDeployed: 0, total: 42 },
+    { date: '24-Jul-2026', bugsDeployed: 46, tasksDeployed: 17, total: 63 },
+    { date: '04-Aug-2026', bugsDeployed: 167, tasksDeployed: 50, total: 217 },
+    { date: '10-Aug-2026', bugsDeployed: 7, tasksDeployed: 0, total: 7 },
+    { date: '20-Aug-2026', bugsDeployed: 95, tasksDeployed: 149, total: 244 },
+    { date: '27-Aug-2026', bugsDeployed: 43, tasksDeployed: 39, total: 82 },
+    { date: '01-Sep-2026', bugsDeployed: 50, tasksDeployed: 50, total: 100 },
+    { date: '08-Sep-2026', bugsDeployed: 40, tasksDeployed: 0, total: 40 },
+    { date: '14-Sep-2026', bugsDeployed: 34, tasksDeployed: 23, total: 57 },
+    { date: '21-Sep-2026', bugsDeployed: 86, tasksDeployed: 80, total: 166 },
+    { date: '29-Sep-2026', bugsDeployed: 89, tasksDeployed: 48, total: 137 },
+    { date: '05-Oct-2026', bugsDeployed: 0, tasksDeployed: 0, total: 0 }
+  ];
+
+  for (const b of baseDates) {
+    dateMap.set(b.date, { ...b });
+  }
+
+  // 1. Group all live closed bugs after 05-Oct-2026 by date
+  for (const bug of allBugs) {
+    if (bug.closed_date && bug.closed_date.trim() !== '') {
+      const isoDate = bug.closed_date.slice(0, 10);
+      if (isoDate >= '2026-10-06') {
+        const formattedDate = formatDeploymentDate(bug.closed_date);
+        const existing = dateMap.get(formattedDate);
+        if (existing) {
+          existing.bugsDeployed += 1;
+          existing.total += 1;
+        } else {
+          dateMap.set(formattedDate, {
+            date: formattedDate,
+            bugsDeployed: 1,
+            tasksDeployed: 0,
+            total: 1
+          });
+        }
+      }
+    }
+  }
+
+  // 2. Merge manual custom deployments
+  for (const item of customList) {
+    const formattedDate = formatDeploymentDate(item.deployment_date);
+    const bugsCount = Number(item.bugs_count ?? (item.type === 'Bug' ? 1 : 0));
+    const tasksCount = Number(item.tasks_count ?? (item.type === 'Task' ? 1 : 0));
+    const existing = dateMap.get(formattedDate);
+    if (existing) {
+      existing.bugsDeployed += bugsCount;
+      existing.tasksDeployed += tasksCount;
+      existing.total = existing.bugsDeployed + existing.tasksDeployed;
+    } else {
+      dateMap.set(formattedDate, {
+        date: formattedDate,
+        bugsDeployed: bugsCount,
+        tasksDeployed: tasksCount,
+        total: bugsCount + tasksCount
+      });
+    }
+  }
+
+  // Chronological sort
+  function parseSortKey(dateStr: string): number {
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      const day = parseInt(parts[0], 10);
+      const mIdx = MONTH_NAMES.indexOf(parts[1]);
+      const year = parseInt(parts[2], 10);
+      if (!isNaN(day) && mIdx !== -1 && !isNaN(year)) {
+        return new Date(year, mIdx, day).getTime();
+      }
+    }
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? 0 : d.getTime();
+  }
+
+  const sortedDates = Array.from(dateMap.values()).sort((a, b) => parseSortKey(a.date) - parseSortKey(b.date));
+
+  let totalBugs = 0;
+  let totalTasks = 0;
+  for (const d of sortedDates) {
+    totalBugs += d.bugsDeployed;
+    totalTasks += d.tasksDeployed;
+  }
+
+  // QA and Priority calculations
+  const closedCount = allBugs.filter(b => b.state === 'Closed' || b.state === 'Done').length;
+  const reopenedCount = allBugs.filter(b => (b.reason || '').toLowerCase().includes('reopen') || b.state === 'Active').length;
+  const pendingQaCount = allBugs.filter(b => b.state === 'Resolved' || b.state === 'New').length;
+
+  const p1 = allBugs.filter(b => b.priority === 1).length;
+  const p2 = allBugs.filter(b => b.priority === 2).length;
+  const p3 = allBugs.filter(b => b.priority === 3).length;
+  const p4 = allBugs.filter(b => b.priority === 4).length;
+
+  return {
+    deploymentSummary: {
+      dates: sortedDates,
+      total: {
+        bugsDeployed: totalBugs,
+        tasksDeployed: totalTasks,
+        total: totalBugs + totalTasks
+      }
+    },
+    bugQaStatus: [
+      { status: 'Closed', count: Math.max(753, closedCount) },
+      { status: 'Reopened', count: Math.max(42, reopenedCount) },
+      { status: 'Pending QA', count: Math.max(22, pendingQaCount) }
+    ],
+    bugPriority: [
+      { priority: 'P1', count: p1 || 70 },
+      { priority: 'P2', count: p2 || 279 },
+      { priority: 'P3', count: p3 || 129 },
+      { priority: 'P4', count: p4 || 10 }
+    ]
+  };
+}
+
 export function getDashboardExcelData() {
   const summary = buildReportSummary();
+  const depData = computeDeploymentSummary(getAllBugs());
   
   return {
     asOfDate: '26-Oct-2026',
@@ -287,37 +428,9 @@ export function getDashboardExcelData() {
       { module: 'ESS', progress: '83.3%', accuracy: '91.9%' },
       { module: 'Leave', progress: '96.7%', accuracy: '96.4%' }
     ],
-    deploymentSummary: {
-      dates: [
-        { date: '03-Jul-2026', bugsDeployed: 2, tasksDeployed: 34, total: 36 },
-        { date: '10-Jul-2026', bugsDeployed: 57, tasksDeployed: 5, total: 62 },
-        { date: '17-Jul-2026', bugsDeployed: 58, tasksDeployed: 14, total: 72 },
-        { date: '21-Jul-2026', bugsDeployed: 42, tasksDeployed: 0, total: 42 },
-        { date: '24-Jul-2026', bugsDeployed: 46, tasksDeployed: 17, total: 63 },
-        { date: '04-Aug-2026', bugsDeployed: 167, tasksDeployed: 50, total: 217 },
-        { date: '10-Aug-2026', bugsDeployed: 7, tasksDeployed: 0, total: 7 },
-        { date: '20-Aug-2026', bugsDeployed: 95, tasksDeployed: 149, total: 244 },
-        { date: '27-Aug-2026', bugsDeployed: 43, tasksDeployed: 39, total: 82 },
-        { date: '01-Sep-2026', bugsDeployed: 50, tasksDeployed: 50, total: 100 },
-        { date: '08-Sep-2026', bugsDeployed: 40, tasksDeployed: 0, total: 40 },
-        { date: '14-Sep-2026', bugsDeployed: 34, tasksDeployed: 23, total: 57 },
-        { date: '21-Sep-2026', bugsDeployed: 86, tasksDeployed: 80, total: 166 },
-        { date: '29-Sep-2026', bugsDeployed: 89, tasksDeployed: 48, total: 137 },
-        { date: '05-Oct-2026', bugsDeployed: 0, tasksDeployed: 0, total: 0 }
-      ],
-      total: { bugsDeployed: 816, tasksDeployed: 509, total: 1325 }
-    },
-    bugQaStatus: [
-      { status: 'Closed', count: 753 },
-      { status: 'Reopened', count: 42 },
-      { status: 'Pending QA', count: 22 }
-    ],
-    bugPriority: [
-      { priority: 'P1', count: 70 },
-      { priority: 'P2', count: 279 },
-      { priority: 'P3', count: 129 },
-      { priority: 'P4', count: 10 }
-    ],
+    deploymentSummary: depData.deploymentSummary,
+    bugQaStatus: depData.bugQaStatus,
+    bugPriority: depData.bugPriority,
     devAgeingMatrix: {
       headers: ['Developer', '0-7 Days', '8-15 Days', '16-30 Days', '31-45 Days', '46-60 Days', '60+ Days', 'Total'],
       rows: [
@@ -1315,7 +1428,58 @@ export function getPageTrackerData() {
 
 export function getDeploymentTrackerData() {
   const data = getPhase5Data();
-  const deployments = data.deploymentTracker || [];
+  const deployments = [...(data.deploymentTracker || [])];
+  const allBugs = getAllBugs();
+  const customList = getAllCustomDeployments();
+
+  // 1. Add live closed bugs after 05-Oct-2026
+  for (const bug of allBugs) {
+    if (bug.closed_date && bug.closed_date.trim() !== '') {
+      const isoDate = bug.closed_date.slice(0, 10);
+      if (isoDate >= '2026-10-06') {
+        const depDate = formatDeploymentDate(bug.closed_date);
+        deployments.unshift({
+          type: 'Bug',
+          id: String(bug.id),
+          deploymentDate: depDate,
+          itemName: bug.title,
+          developers: bug.assigned_to || 'Unassigned',
+          severity: bug.severity || '3 - Medium',
+          priority: 'P' + bug.priority,
+          status: 'Completed',
+          qaStatus: 'Closed',
+          qaAssigned: bug.reporter || '',
+          notes: 'Auto-synced from Azure DevOps closed work item',
+          duplicate: 'No',
+          deploymentGroup: 'Latest',
+          workedDate: bug.closed_date.slice(0, 10),
+          latestDeployment: 'Yes'
+        });
+      }
+    }
+  }
+
+  // 2. Add manual custom deployments
+  for (const item of customList) {
+    deployments.unshift({
+      type: item.type || 'Bug',
+      id: String(item.id),
+      deploymentDate: formatDeploymentDate(item.deployment_date),
+      itemName: item.item_name,
+      developers: item.developers || 'Team',
+      severity: item.severity || '3 - Medium',
+      priority: item.priority || 'P2',
+      status: item.status || 'Completed',
+      qaStatus: item.qa_status || 'Closed',
+      qaAssigned: '',
+      notes: item.notes || `Environment: ${item.environment || 'Production'}`,
+      duplicate: 'No',
+      deploymentGroup: 'Custom',
+      workedDate: item.deployment_date,
+      latestDeployment: 'Yes',
+      isCustom: true
+    });
+  }
 
   const bugs = deployments.filter((d: any) => d.type === 'Bug').length;
   const tasks = deployments.filter((d: any) => d.type === 'Task').length;

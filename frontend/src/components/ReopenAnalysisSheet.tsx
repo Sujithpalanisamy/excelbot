@@ -21,6 +21,7 @@ import {
 } from 'recharts';
 import type { ReopenAnalysisData } from '../types';
 import { api } from '../services/api';
+import { Pagination } from './Pagination';
 
 interface ReopenAnalysisSheetProps {
   onNavigateToSheet1WithFilter?: (filterType: string, filterValue: string) => void;
@@ -32,6 +33,8 @@ export const ReopenAnalysisSheet: React.FC<ReopenAnalysisSheetProps> = ({
 }) => {
   const [data, setData] = useState<ReopenAnalysisData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
 
   useEffect(() => {
     let isMounted = true;
@@ -82,6 +85,8 @@ export const ReopenAnalysisSheet: React.FC<ReopenAnalysisSheetProps> = ({
       </div>
     );
   }
+
+  const paginatedRows = data.rows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
     <div className="space-y-4">
@@ -218,7 +223,7 @@ export const ReopenAnalysisSheet: React.FC<ReopenAnalysisSheetProps> = ({
               </tr>
             </thead>
             <tbody>
-              {data.rows.map((r, idx) => {
+              {paginatedRows.map((r, idx) => {
                 const accVal = parseFloat(r.fixAccuracyPct);
                 let accClass = "text-emerald-700 font-bold";
                 if (accVal < 85) accClass = "text-rose-700 font-bold bg-rose-50";
@@ -315,6 +320,16 @@ export const ReopenAnalysisSheet: React.FC<ReopenAnalysisSheetProps> = ({
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Bar */}
+        <Pagination
+          currentPage={currentPage}
+          totalItems={data.rows.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          pageSizeOptions={[5, 10, 20]}
+        />
 
         {/* Legend / Guidance Footer */}
         <div className="bg-slate-50 border border-slate-200 p-3 rounded text-xs text-slate-600 space-y-1">

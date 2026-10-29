@@ -7,6 +7,7 @@ import {
   Search
 } from 'lucide-react';
 import type { BugItem } from '../types';
+import { Pagination } from './Pagination';
 
 interface ExecutiveReportSheetProps {
   allBugs: BugItem[];
@@ -17,6 +18,8 @@ export const ExecutiveReportSheet: React.FC<ExecutiveReportSheetProps> = ({
   allBugs,
 }) => {
   const [searchFilter, setSearchFilter] = useState('');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(25);
 
   const totalBugs = allBugs.length;
   const newCount = allBugs.filter(b => ['new', 'proposed', 'to do'].includes((b.state || '').toLowerCase())).length;
@@ -147,12 +150,12 @@ export const ExecutiveReportSheet: React.FC<ExecutiveReportSheetProps> = ({
             <table className="w-full text-xs">
               <tbody className="divide-y divide-slate-100">
                 <tr>
-                  <td className="py-2 px-4 text-slate-700 font-medium">New / Proposed</td>
+                  <td className="py-2 px-4 text-slate-700 font-medium">New</td>
                   <td className="py-2 px-4 text-right font-mono font-bold text-sky-700">{newCount}</td>
                   <td className="py-2 px-4 text-right text-slate-500 font-mono text-[11px]">{totalBugs > 0 ? ((newCount / totalBugs) * 100).toFixed(1) : 0}%</td>
                 </tr>
                 <tr>
-                  <td className="py-2 px-4 text-slate-700 font-medium">Active / Committed</td>
+                  <td className="py-2 px-4 text-slate-700 font-medium">Committed</td>
                   <td className="py-2 px-4 text-right font-mono font-bold text-amber-700">{activeCount}</td>
                   <td className="py-2 px-4 text-right text-slate-500 font-mono text-[11px]">{totalBugs > 0 ? ((activeCount / totalBugs) * 100).toFixed(1) : 0}%</td>
                 </tr>
@@ -214,7 +217,10 @@ export const ExecutiveReportSheet: React.FC<ExecutiveReportSheetProps> = ({
               <input
                 type="search"
                 value={searchFilter}
-                onChange={(e) => setSearchFilter(e.target.value)}
+                onChange={(e) => {
+                  setSearchFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
                 placeholder="Filter report rows..."
                 className="h-8 w-full pl-8 pr-2.5 text-xs rounded-md border border-slate-300 focus:outline-none focus:border-sky-500"
               />
@@ -235,7 +241,7 @@ export const ExecutiveReportSheet: React.FC<ExecutiveReportSheetProps> = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredBugs.slice(0, 100).map((b) => (
+                {filteredBugs.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((b) => (
                   <tr key={b.id} className="hover:bg-slate-50/70">
                     <td className="py-2 px-3 font-mono font-semibold text-sky-700">
                       {b.id}
@@ -273,11 +279,19 @@ export const ExecutiveReportSheet: React.FC<ExecutiveReportSheetProps> = ({
               </tbody>
             </table>
           </div>
-          {filteredBugs.length > 100 && (
-            <p className="text-xs text-slate-400 text-right print:hidden">
-              Showing first 100 of {filteredBugs.length} work items. Click "Export Report (.csv)" for the full dataset.
-            </p>
-          )}
+          <div className="print:hidden">
+            <Pagination
+              currentPage={currentPage}
+              totalItems={filteredBugs.length}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={(newSize) => {
+                setPageSize(newSize);
+                setCurrentPage(1);
+              }}
+              pageSizeOptions={[10, 25, 50, 100]}
+            />
+          </div>
         </div>
       </div>
     </div>

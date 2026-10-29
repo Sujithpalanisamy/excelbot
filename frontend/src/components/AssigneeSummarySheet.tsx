@@ -20,6 +20,7 @@ import {
 } from 'recharts';
 import type { AssigneeSummaryData } from '../types';
 import { api } from '../services/api';
+import { Pagination } from './Pagination';
 
 interface AssigneeSummarySheetProps {
   onNavigateToSheet1WithFilter?: (filterType: string, filterValue: string) => void;
@@ -32,6 +33,8 @@ export const AssigneeSummarySheet: React.FC<AssigneeSummarySheetProps> = ({
   const [data, setData] = useState<AssigneeSummaryData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(25);
 
   useEffect(() => {
     let isMounted = true;
@@ -86,6 +89,8 @@ export const AssigneeSummarySheet: React.FC<AssigneeSummarySheetProps> = ({
   const filteredRows = data.rows.filter(r => 
     !searchTerm || r.assignedTo.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const paginatedRows = filteredRows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
     <div className="space-y-4">
@@ -185,9 +190,9 @@ export const AssigneeSummarySheet: React.FC<AssigneeSummarySheetProps> = ({
               <YAxis tick={{ fontSize: 10 }} />
               <Tooltip />
               <Legend verticalAlign="top" height={30} iconType="rect" />
-              <Bar dataKey="open" name="Open (New/To Do)" stackId="a" fill="#f59e0b" />
-              <Bar dataKey="active" name="Active / Committed" stackId="a" fill="#0284c7" />
-              <Bar dataKey="closed" name="Closed / Done" stackId="a" fill="#10b981" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="open" name="New" stackId="a" fill="#f59e0b" />
+              <Bar dataKey="active" name="Committed" stackId="a" fill="#0284c7" />
+              <Bar dataKey="closed" name="Closed" stackId="a" fill="#10b981" radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -251,7 +256,7 @@ export const AssigneeSummarySheet: React.FC<AssigneeSummarySheetProps> = ({
               </tr>
             </thead>
             <tbody>
-              {filteredRows.map((r, idx) => (
+              {paginatedRows.map((r, idx) => (
                 <tr key={idx} className="hover:bg-slate-50 transition-colors">
                   <td className="py-2 px-3 border border-slate-300 font-medium text-slate-900 bg-[#d9e1f2]">
                     <button
@@ -336,6 +341,16 @@ export const AssigneeSummarySheet: React.FC<AssigneeSummarySheetProps> = ({
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Bar */}
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredRows.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          pageSizeOptions={[10, 20, 50, 100]}
+        />
 
       </div>
     </div>

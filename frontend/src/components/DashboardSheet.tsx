@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Download,
   Printer,
@@ -12,8 +12,10 @@ import {
   ChevronDown,
   ChevronUp,
   Activity,
-  AlertCircle
+  AlertCircle,
+  Plus
 } from 'lucide-react';
+import { AddDeploymentModal } from './AddDeploymentModal';
 import {
   ResponsiveContainer,
   BarChart,
@@ -31,6 +33,7 @@ import {
 } from 'recharts';
 import type { DashboardExcelData, BugItem } from '../types';
 import { api } from '../services/api';
+import { Pagination } from './Pagination';
 
 interface DashboardSheetProps {
   allBugs: BugItem[];
@@ -83,26 +86,25 @@ export const DashboardSheet: React.FC<DashboardSheetProps> = ({
   const [asOfDate, setAsOfDate] = useState('26-Oct-2026');
   const [showCharts, setShowCharts] = useState(true);
   const [showDailyTable, setShowDailyTable] = useState(false);
+  const [dailyPage, setDailyPage] = useState<number>(1);
+  const [dailyPageSize, setDailyPageSize] = useState<number>(15);
+  const [isAddDeploymentOpen, setIsAddDeploymentOpen] = useState(false);
+
+  const loadDashboardData = useCallback(async () => {
+    try {
+      const res = await api.getDashboardExcelData();
+      setData(res);
+      if (res.asOfDate) setAsOfDate(res.asOfDate);
+    } catch (err) {
+      console.error('Failed to load excel dashboard data:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    let isMounted = true;
-    const loadDashboardData = async () => {
-      try {
-        const res = await api.getDashboardExcelData();
-        if (isMounted) {
-          setData(res);
-          if (res.asOfDate) setAsOfDate(res.asOfDate);
-        }
-      } catch (err) {
-        console.error('Failed to load excel dashboard data:', err);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
-
     loadDashboardData();
-    return () => { isMounted = false; };
-  }, [allBugs]);
+  }, [loadDashboardData, allBugs]);
 
   const handleExportCsv = () => {
     if (!data) return;
@@ -674,8 +676,22 @@ export const DashboardSheet: React.FC<DashboardSheetProps> = ({
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-4">
             {/* Table 1: Deployment Summary — By Date (Cols A-D, spans 2 cols on lg) */}
             <div className="lg:col-span-2 border border-slate-300 bg-white">
-              <div className="bg-slate-100 px-3 py-1.5 font-bold text-xs text-slate-800 border-b border-slate-300">
-                Deployment Summary — By Date
+              <div className="bg-slate-100 px-3 py-2 font-bold text-xs text-slate-800 border-b border-slate-300 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span>Deployment Summary — By Date</span>
+                  <span className="text-[10px] bg-sky-100 text-[#1b365d] px-2 py-0.5 rounded font-normal">
+                    Auto-Synced Azure + Manual Releases
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsAddDeploymentOpen(true)}
+                  className="px-2.5 py-1 bg-[#1b365d] hover:bg-[#234575] text-white text-[11px] font-semibold rounded flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
+                  title="Manually log a new deployment or release build"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  + Add Deployment
+                </button>
               </div>
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -1334,17 +1350,30 @@ export const DashboardSheet: React.FC<DashboardSheetProps> = ({
                       </tr>
                     </thead>
                     <tbody>
-                      {(data.dailyTimeline || []).map((row, i) => (
-                        <tr key={i} className="hover:bg-slate-50 border-b border-slate-200">
-                          <td className="py-1 px-3 font-mono font-medium">{row.date}</td>
-                          <td className="py-1 px-3 font-mono text-right text-sky-800">{row.raised}</td>
-                          <td className="py-1 px-3 font-mono text-right text-rose-700">{row.reopened}</td>
-                          <td className="py-1 px-3 font-mono text-right text-emerald-700">{row.closed}</td>
-                          <td className="py-1 px-3 font-mono text-right text-amber-700 font-bold">{row.pending}</td>
-                        </tr>
-                      ))}
+                      {(data.dailyTimeline || [])
+                        .slice((dailyPage - 1) * dailyPageSize, dailyPage * dailyPageSize)
+                        .map((row, i) => (
+                          <tr key={i} className="hover:bg-slate-50 border-b border-slate-200">
+                            <td className="py-1 px-3 font-mono font-medium">{row.date}</td>
+                            <td className="py-1 px-3 font-mono text-right text-sky-800">{row.raised}</td>
+                            <td className="py-1 px-3 font-mono text-right text-rose-700">{row.reopened}</td>
+                            <td className="py-1 px-3 font-mono text-right text-emerald-700">{row.closed}</td>
+                            <td className="py-1 px-3 font-mono text-right text-amber-700 font-bold">{row.pending}</td>
+                          </tr>
+                        ))}
                     </tbody>
                   </table>
+                  <Pagination
+                    currentPage={dailyPage}
+                    totalItems={(data.dailyTimeline || []).length}
+                    pageSize={dailyPageSize}
+                    onPageChange={setDailyPage}
+                    onPageSizeChange={(newSize) => {
+                      setDailyPageSize(newSize);
+                      setDailyPage(1);
+                    }}
+                    pageSizeOptions={[10, 15, 25, 50]}
+                  />
                 </div>
               )}
             </div>
@@ -1352,6 +1381,12 @@ export const DashboardSheet: React.FC<DashboardSheetProps> = ({
         </div>
 
       </div>
+
+      <AddDeploymentModal
+        isOpen={isAddDeploymentOpen}
+        onClose={() => setIsAddDeploymentOpen(false)}
+        onSuccess={loadDashboardData}
+      />
     </div>
   );
 };

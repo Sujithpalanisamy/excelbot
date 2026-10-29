@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { PageReportRequestSchema } from '../validators/schemas.js';
+import { insertCustomDeployment, deleteCustomDeployment } from '../database/index.js';
 import { 
   buildReportSummary, 
   getDashboardExcelData,
@@ -91,6 +92,42 @@ reportsRouter.get('/deployment-tracker', (req, res, next) => {
   try {
     const data = getDeploymentTrackerData();
     res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
+
+reportsRouter.post('/deployments', async (req, res, next) => {
+  try {
+    const { deployment_date, type, item_name, developers, severity, priority, status, qa_status, environment, notes, bugs_count, tasks_count } = req.body;
+    if (!deployment_date || !item_name) {
+      return res.status(400).json({ error: 'deployment_date and item_name are required' });
+    }
+    const created = await insertCustomDeployment({
+      deployment_date,
+      type,
+      item_name,
+      developers,
+      severity,
+      priority,
+      status,
+      qa_status,
+      environment,
+      notes,
+      bugs_count,
+      tasks_count,
+    });
+    res.status(201).json({ success: true, deployment: created });
+  } catch (err) {
+    next(err);
+  }
+});
+
+reportsRouter.delete('/deployments/:id', async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    const success = await deleteCustomDeployment(id);
+    res.json({ success });
   } catch (err) {
     next(err);
   }

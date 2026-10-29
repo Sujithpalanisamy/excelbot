@@ -19,6 +19,7 @@ import {
 } from 'recharts';
 import type { QaScorecardData } from '../types';
 import { api } from '../services/api';
+import { Pagination } from './Pagination';
 
 interface QaScorecardSheetProps {
   onNavigateToSheet1WithFilter?: (filterType: string, filterValue: string) => void;
@@ -30,6 +31,8 @@ export const QaScorecardSheet: React.FC<QaScorecardSheetProps> = ({
 }) => {
   const [data, setData] = useState<QaScorecardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
 
   useEffect(() => {
     let isMounted = true;
@@ -224,7 +227,7 @@ export const QaScorecardSheet: React.FC<QaScorecardSheetProps> = ({
               </tr>
             </thead>
             <tbody>
-              {data.rows.map((r, idx) => (
+              {data.rows.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((r, idx) => (
                 <tr key={idx} className="hover:bg-slate-50 transition-colors">
                   <td className="py-2 px-3 border border-slate-300 font-medium text-slate-900 bg-[#d9e1f2] whitespace-nowrap">
                     <button
@@ -328,6 +331,18 @@ export const QaScorecardSheet: React.FC<QaScorecardSheetProps> = ({
             </tbody>
           </table>
         </div>
+
+        <Pagination
+          currentPage={currentPage}
+          totalItems={data.rows.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(newSize) => {
+            setPageSize(newSize);
+            setCurrentPage(1);
+          }}
+          pageSizeOptions={[5, 10, 20, 50]}
+        />
 
         {/* Quality note */}
         <div className="bg-slate-50 border border-slate-200 p-3 rounded text-xs text-slate-600 space-y-1">

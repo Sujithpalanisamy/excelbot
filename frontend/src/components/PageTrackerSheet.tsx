@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import type { PageTrackerData } from '../types';
 import { api } from '../services/api';
+import { Pagination } from './Pagination';
 
 interface PageTrackerSheetProps {
   onNavigateToSheet1WithFilter?: (filterType: string, filterValue: string) => void;
@@ -23,6 +24,8 @@ export const PageTrackerSheet: React.FC<PageTrackerSheetProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [filterModule, setFilterModule] = useState<string>('all');
   const [filterComplexity, setFilterComplexity] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(25);
 
   useEffect(() => {
     let isMounted = true;
@@ -85,6 +88,8 @@ export const PageTrackerSheet: React.FC<PageTrackerSheetProps> = ({
 
     return matchesSearch && matchesMod && matchesComp;
   });
+
+  const paginatedPages = filteredPages.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
     <div className="space-y-4">
@@ -258,7 +263,7 @@ export const PageTrackerSheet: React.FC<PageTrackerSheetProps> = ({
               </tr>
             </thead>
             <tbody>
-              {filteredPages.map((p) => (
+              {paginatedPages.map((p) => (
                 <tr key={p.pageId} className="hover:bg-slate-50 transition-colors">
                   <td className="py-1.5 px-2 border border-slate-300 font-mono text-center text-slate-600 bg-slate-50">
                     {p.pageId}
@@ -310,6 +315,16 @@ export const PageTrackerSheet: React.FC<PageTrackerSheetProps> = ({
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Bar */}
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredPages.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          pageSizeOptions={[15, 25, 50, 100]}
+        />
 
       </div>
     </div>

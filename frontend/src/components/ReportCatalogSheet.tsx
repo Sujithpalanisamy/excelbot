@@ -8,6 +8,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { api } from '../services/api';
+import { Pagination } from './Pagination';
 
 interface ReportCatalogItem {
   id: number;
@@ -33,6 +34,8 @@ export const ReportCatalogSheet: React.FC = () => {
   const [selectedModule, setSelectedModule] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
 
   useEffect(() => {
     let isMounted = true;
@@ -125,7 +128,10 @@ export const ReportCatalogSheet: React.FC = () => {
               <button
                 key={m}
                 type="button"
-                onClick={() => setSelectedModule(m)}
+                onClick={() => {
+                  setSelectedModule(m);
+                  setCurrentPage(1);
+                }}
                 className={`px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
                   isSelected
                     ? 'btn-sky text-white shadow-2xs'
@@ -143,7 +149,10 @@ export const ReportCatalogSheet: React.FC = () => {
           <input
             type="search"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
             placeholder="Search report name or module..."
             className="h-8.5 w-full pl-8 pr-3 text-xs rounded-lg bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:border-sky-600 focus:outline-none shadow-2xs"
           />
@@ -164,7 +173,7 @@ export const ReportCatalogSheet: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredReports.map((r) => (
+              {filteredReports.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((r) => (
                 <tr key={r.id} className="hover:bg-slate-50/70 transition-colors">
                   <td className="py-2.5 px-4 font-mono text-slate-500 font-semibold">
                     {r.id}
@@ -205,6 +214,18 @@ export const ReportCatalogSheet: React.FC = () => {
             </tbody>
           </table>
         </div>
+
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredReports.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(newSize) => {
+            setPageSize(newSize);
+            setCurrentPage(1);
+          }}
+          pageSizeOptions={[5, 10, 20, 50]}
+        />
       </div>
     </div>
   );

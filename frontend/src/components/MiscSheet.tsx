@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import type { MiscData } from '../types';
 import { api } from '../services/api';
+import { Pagination } from './Pagination';
 
 interface MiscSheetProps {
   onDownloadExcel?: () => void;
@@ -22,6 +23,8 @@ export const MiscSheet: React.FC<MiscSheetProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'nurture' | 'pwadmin' | 'fields'>('all');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(25);
 
   useEffect(() => {
     let isMounted = true;
@@ -172,7 +175,10 @@ export const MiscSheet: React.FC<MiscSheetProps> = ({
       <div className="bg-white p-3 border border-slate-300 rounded shadow-2xs flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center bg-slate-100 p-0.5 rounded border border-slate-200 text-xs">
           <button
-            onClick={() => setActiveTab('all')}
+            onClick={() => {
+              setActiveTab('all');
+              setCurrentPage(1);
+            }}
             className={`px-3 py-1 rounded font-medium transition-colors ${
               activeTab === 'all' ? 'bg-white text-slate-900 shadow-2xs font-semibold' : 'text-slate-600 hover:text-slate-900'
             }`}
@@ -180,7 +186,10 @@ export const MiscSheet: React.FC<MiscSheetProps> = ({
             All Items ({allItems.length})
           </button>
           <button
-            onClick={() => setActiveTab('nurture')}
+            onClick={() => {
+              setActiveTab('nurture');
+              setCurrentPage(1);
+            }}
             className={`px-3 py-1 rounded font-medium transition-colors ${
               activeTab === 'nurture' ? 'bg-white text-slate-900 shadow-2xs font-semibold' : 'text-slate-600 hover:text-slate-900'
             }`}
@@ -188,7 +197,10 @@ export const MiscSheet: React.FC<MiscSheetProps> = ({
             Nurture & Manage ({data.nurtureManage.length})
           </button>
           <button
-            onClick={() => setActiveTab('pwadmin')}
+            onClick={() => {
+              setActiveTab('pwadmin');
+              setCurrentPage(1);
+            }}
             className={`px-3 py-1 rounded font-medium transition-colors ${
               activeTab === 'pwadmin' ? 'bg-white text-slate-900 shadow-2xs font-semibold' : 'text-slate-600 hover:text-slate-900'
             }`}
@@ -196,7 +208,10 @@ export const MiscSheet: React.FC<MiscSheetProps> = ({
             PWadmin ({data.pwAdmin.length})
           </button>
           <button
-            onClick={() => setActiveTab('fields')}
+            onClick={() => {
+              setActiveTab('fields');
+              setCurrentPage(1);
+            }}
             className={`px-3 py-1 rounded font-medium transition-colors ${
               activeTab === 'fields' ? 'bg-white text-slate-900 shadow-2xs font-semibold' : 'text-slate-600 hover:text-slate-900'
             }`}
@@ -211,7 +226,10 @@ export const MiscSheet: React.FC<MiscSheetProps> = ({
             type="text"
             placeholder="Search item or note..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-300 rounded focus:outline-hidden focus:border-blue-500"
           />
         </div>
@@ -247,7 +265,7 @@ export const MiscSheet: React.FC<MiscSheetProps> = ({
                   </td>
                 </tr>
               ) : (
-                filteredItems.map((item, idx) => (
+                filteredItems.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((item, idx) => (
                   <tr 
                     key={idx}
                     className="hover:bg-blue-50/60 transition-colors group text-slate-800 even:bg-slate-50/50"
@@ -300,6 +318,18 @@ export const MiscSheet: React.FC<MiscSheetProps> = ({
             </tfoot>
           </table>
         </div>
+
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredItems.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(newSize) => {
+            setPageSize(newSize);
+            setCurrentPage(1);
+          }}
+          pageSizeOptions={[10, 25, 50, 100]}
+        />
       </div>
     </div>
   );

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import type { PendingWithDeveloperData, PendingBugItem } from '../types';
 import { api } from '../services/api';
+import { Pagination } from './Pagination';
 
 interface PendingWithDeveloperSheetProps {
   onNavigateToSheet1WithFilter?: (filterType: string, filterValue: string) => void;
@@ -28,6 +29,8 @@ export const PendingWithDeveloperSheet: React.FC<PendingWithDeveloperSheetProps>
   const [filterModule, setFilterModule] = useState<string>('all');
   const [filterDeveloper, setFilterDeveloper] = useState<string>('all');
   const [showDetailedList, setShowDetailedList] = useState(true);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(25);
 
   useEffect(() => {
     let isMounted = true;
@@ -104,6 +107,8 @@ export const PendingWithDeveloperSheet: React.FC<PendingWithDeveloperSheetProps>
     const matchesDev = filterDeveloper === 'all' || b.assigned_to.toLowerCase() === filterDeveloper.toLowerCase();
     return matchesSearch && matchesMod && matchesDev;
   });
+
+  const paginatedBugs = filteredBugs.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
     <div className="space-y-4 font-sans text-xs select-text">
@@ -500,7 +505,7 @@ export const PendingWithDeveloperSheet: React.FC<PendingWithDeveloperSheetProps>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredBugs.map((b: PendingBugItem, idx: number) => {
+                    {paginatedBugs.map((b: PendingBugItem, idx: number) => {
                       const isHighCrit = b.severity.toLowerCase().includes('critical') || b.severity.toLowerCase().includes('high');
                       return (
                         <tr key={idx} className="hover:bg-slate-50 transition-colors">
@@ -552,6 +557,16 @@ export const PendingWithDeveloperSheet: React.FC<PendingWithDeveloperSheetProps>
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination Bar */}
+              <Pagination
+                currentPage={currentPage}
+                totalItems={filteredBugs.length}
+                pageSize={pageSize}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={setPageSize}
+                pageSizeOptions={[15, 25, 50, 100]}
+              />
             </div>
           )}
         </div>

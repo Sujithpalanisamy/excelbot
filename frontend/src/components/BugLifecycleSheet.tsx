@@ -6,8 +6,6 @@ import {
   Search,
   RefreshCw,
   Loader2,
-  ChevronLeft,
-  ChevronRight,
   Filter,
   Clock,
   RotateCcw,
@@ -16,6 +14,7 @@ import {
 } from 'lucide-react';
 import type { BugLifecycleData, BugLifecycleItem } from '../types';
 import { api } from '../services/api';
+import { Pagination } from './Pagination';
 
 interface BugLifecycleSheetProps {
   onNavigateToSheet1WithFilter?: (filterType: string, filterValue: string) => void;
@@ -32,7 +31,7 @@ export const BugLifecycleSheet: React.FC<BugLifecycleSheetProps> = ({
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterReopened, setFilterReopened] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 50;
+  const [pageSize, setPageSize] = useState(50);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -90,7 +89,6 @@ export const BugLifecycleSheet: React.FC<BugLifecycleSheetProps> = ({
     return matchesSearch && matchesMod && matchesStat && matchesReopen;
   });
 
-  const totalPages = Math.ceil(filtered.length / pageSize) || 1;
   const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const modules = Array.from(new Set(data.records.map(i => i.module))).filter(Boolean);
@@ -352,33 +350,14 @@ export const BugLifecycleSheet: React.FC<BugLifecycleSheetProps> = ({
         </div>
 
         {/* Pagination Bar */}
-        <div className="flex items-center justify-between text-xs text-slate-600 pt-2 flex-wrap gap-2">
-          <div>
-            Showing {(currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, filtered.length)} of {filtered.length} entries
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              disabled={currentPage <= 1}
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              className="p-1.5 border border-slate-300 rounded bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" />
-            </button>
-            <span className="font-mono text-xs px-2">
-              Page {currentPage} of {totalPages}
-            </span>
-            <button
-              type="button"
-              disabled={currentPage >= totalPages}
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              className="p-1.5 border border-slate-300 rounded bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filtered.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          pageSizeOptions={[25, 50, 100, 200]}
+        />
 
       </div>
     </div>

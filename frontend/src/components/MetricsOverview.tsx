@@ -43,7 +43,7 @@ export const MetricsOverview: React.FC<MetricsOverviewProps> = ({
     },
     {
       id: 'open',
-      title: 'Open / New',
+      title: 'New',
       value: openCount,
       sub: 'Awaiting triage or backlog',
       icon: Clock,
@@ -53,7 +53,7 @@ export const MetricsOverview: React.FC<MetricsOverviewProps> = ({
     },
     {
       id: 'active',
-      title: 'Active / Committed',
+      title: 'Committed',
       value: activeCount,
       sub: 'In development or approved',
       icon: Activity,

@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import type { InstructionsData } from '../types';
 import { api } from '../services/api';
+import { Pagination } from './Pagination';
 
 interface InstructionsSheetProps {
   onDownloadExcel?: () => void;
@@ -20,6 +21,8 @@ export const InstructionsSheet: React.FC<InstructionsSheetProps> = ({
 }) => {
   const [data, setData] = useState<InstructionsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
 
   useEffect(() => {
     let isMounted = true;
@@ -168,7 +171,7 @@ export const InstructionsSheet: React.FC<InstructionsSheetProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {data.steps.map((s, idx) => (
+              {data.steps.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((s, idx) => (
                 <tr 
                   key={idx}
                   className="hover:bg-blue-50/60 transition-colors group text-slate-800 even:bg-slate-50/50"
@@ -201,6 +204,18 @@ export const InstructionsSheet: React.FC<InstructionsSheetProps> = ({
             </tfoot>
           </table>
         </div>
+
+        <Pagination
+          currentPage={currentPage}
+          totalItems={data.steps.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(newSize) => {
+            setPageSize(newSize);
+            setCurrentPage(1);
+          }}
+          pageSizeOptions={[5, 10, 20, 50]}
+        />
       </div>
     </div>
   );

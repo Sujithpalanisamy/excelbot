@@ -18,6 +18,7 @@ const bugsCache = new Map<number, BugItem>();
 const settingsCache = new Map<string, string>();
 const chatCache: Array<{ role: 'user' | 'assistant'; content: string; timestamp: string }> = [];
 const syncLogsCache: SyncLogEntry[] = [];
+const customDeploymentsCache: any[] = [];
 
 export function getPgPool(): pg.Pool {
   if (!pgPool) {
@@ -138,16 +139,34 @@ export async function initDb(): Promise<void> {
           error_message TEXT DEFAULT ''
         );
 
+        CREATE TABLE IF NOT EXISTS custom_deployments (
+          id SERIAL PRIMARY KEY,
+          deployment_date TEXT NOT NULL,
+          type TEXT DEFAULT 'Bug',
+          item_name TEXT NOT NULL,
+          developers TEXT DEFAULT '',
+          severity TEXT DEFAULT '3 - Medium',
+          priority TEXT DEFAULT 'P2',
+          status TEXT DEFAULT 'Completed',
+          qa_status TEXT DEFAULT 'Closed',
+          environment TEXT DEFAULT 'Production',
+          notes TEXT DEFAULT '',
+          bugs_count INTEGER DEFAULT 1,
+          tasks_count INTEGER DEFAULT 0,
+          created_at TEXT DEFAULT ''
+        );
+
         CREATE INDEX IF NOT EXISTS idx_bugs_page_name ON bugs(page_name);
         CREATE INDEX IF NOT EXISTS idx_bugs_state ON bugs(state);
         CREATE INDEX IF NOT EXISTS idx_bugs_assigned_to ON bugs(assigned_to);
       `);
 
       // Pre-warm memory cache from PostgreSQL
-      const [bugsRes, settingsRes, logsRes] = await Promise.all([
+      const [bugsRes, settingsRes, logsRes, deploymentsRes] = await Promise.all([
         pool.query('SELECT * FROM bugs ORDER BY id DESC'),
         pool.query('SELECT * FROM app_settings'),
         pool.query('SELECT * FROM sync_logs ORDER BY id DESC LIMIT 50'),
+        pool.query('SELECT * FROM custom_deployments ORDER BY id DESC'),
       ]);
 
       for (const row of bugsRes.rows) {
@@ -155,6 +174,10 @@ export async function initDb(): Promise<void> {
       }
       for (const row of settingsRes.rows) {
         settingsCache.set(row.key, row.value);
+      }
+      customDeploymentsCache.length = 0;
+      for (const row of deploymentsRes.rows) {
+        customDeploymentsCache.push(row);
       }
       syncLogsCache.length = 0;
       for (const row of logsRes.rows) {
@@ -232,6 +255,23 @@ export async function initDb(): Promise<void> {
         error_message TEXT DEFAULT ''
       );
 
+      CREATE TABLE IF NOT EXISTS custom_deployments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        deployment_date TEXT NOT NULL,
+        type TEXT DEFAULT 'Bug',
+        item_name TEXT NOT NULL,
+        developers TEXT DEFAULT '',
+        severity TEXT DEFAULT '3 - Medium',
+        priority TEXT DEFAULT 'P2',
+        status TEXT DEFAULT 'Completed',
+        qa_status TEXT DEFAULT 'Closed',
+        environment TEXT DEFAULT 'Production',
+        notes TEXT DEFAULT '',
+        bugs_count INTEGER DEFAULT 1,
+        tasks_count INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT ''
+      );
+
       CREATE INDEX IF NOT EXISTS idx_bugs_page_name ON bugs(page_name);
       CREATE INDEX IF NOT EXISTS idx_bugs_state ON bugs(state);
       CREATE INDEX IF NOT EXISTS idx_bugs_assigned_to ON bugs(assigned_to);
@@ -246,6 +286,11 @@ export async function initDb(): Promise<void> {
     for (const s of settings) {
       settingsCache.set(s.key, s.value);
     }
+    try {
+      const deployments = db.prepare('SELECT * FROM custom_deployments ORDER BY id DESC').all() as any[];
+      customDeploymentsCache.length = 0;
+      customDeploymentsCache.push(...deployments);
+    } catch {}
   }
 }
 
@@ -688,3 +733,91 @@ export function getLastSyncLog(): SyncLogEntry | null {
 export function getSyncLogs(limit = 20): SyncLogEntry[] {
   return syncLogsCache.slice(0, limit);
 }
+
+export function getAllCustomDeployments(): any[] {
+  return [...customDeploymentsCache];
+}
+
+export async function insertCustomDeployment(data: {
+  deployment_date: string;
+  type?: string;
+  item_name: string;
+  developers?: string;
+  severity?: string;
+  priority?: string;
+  status?: string;
+  qa_status?: string;
+  environment?: string;
+  notes?: string;
+  bugs_count?: number;
+  tasks_count?: number;
+}): Promise<any> {
+  const nowIso = new Date().toISOString().replace('T', ' ').slice(0, 19);
+  const entry: any = {
+    id: Date.now(),
+    deployment_date: data.deployment_date,
+    type: data.type || 'Bug',
+    item_name: data.item_name,
+    developers: data.developers || 'Team',
+    severity: data.severity || '3 - Medium',
+    priority: data.priority || 'P2',
+    status: data.status || 'Completed',
+    qa_status: data.qa_status || 'Closed',
+    environment: data.environment || 'Production',
+    notes: data.notes || '',
+    bugs_count: Number(data.bugs_count ?? 1),
+    tasks_count: Number(data.tasks_count ?? 0),
+    created_at: nowIso,
+  };
+
+  if (isPostgres) {
+    const pool = getPgPool();
+    const res = await pool.query(`
+      INSERT INTO custom_deployments (
+        deployment_date, type, item_name, developers, severity,
+        priority, status, qa_status, environment, notes, bugs_count, tasks_count, created_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      RETURNING *
+    `, [
+      entry.deployment_date, entry.type, entry.item_name, entry.developers, entry.severity,
+      entry.priority, entry.status, entry.qa_status, entry.environment, entry.notes,
+      entry.bugs_count, entry.tasks_count, entry.created_at
+    ]);
+    if (res.rows && res.rows[0]) {
+      entry.id = Number(res.rows[0].id);
+    }
+  } else {
+    const db = getSqliteDb();
+    const res = db.prepare(`
+      INSERT INTO custom_deployments (
+        deployment_date, type, item_name, developers, severity,
+        priority, status, qa_status, environment, notes, bugs_count, tasks_count, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      entry.deployment_date, entry.type, entry.item_name, entry.developers, entry.severity,
+      entry.priority, entry.status, entry.qa_status, entry.environment, entry.notes,
+      entry.bugs_count, entry.tasks_count, entry.created_at
+    );
+    entry.id = Number(res.lastInsertRowid);
+  }
+
+  customDeploymentsCache.unshift(entry);
+  return entry;
+}
+
+export async function deleteCustomDeployment(id: number): Promise<boolean> {
+  const index = customDeploymentsCache.findIndex(d => Number(d.id) === Number(id));
+  if (index !== -1) {
+    customDeploymentsCache.splice(index, 1);
+  }
+
+  if (isPostgres) {
+    const pool = getPgPool();
+    await pool.query('DELETE FROM custom_deployments WHERE id = $1', [id]);
+  } else {
+    const db = getSqliteDb();
+    db.prepare('DELETE FROM custom_deployments WHERE id = ?').run(id);
+  }
+  return true;
+}
+

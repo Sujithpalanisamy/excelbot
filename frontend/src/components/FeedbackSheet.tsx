@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import type { FeedbackData } from '../types';
 import { api } from '../services/api';
+import { Pagination } from './Pagination';
 
 interface FeedbackSheetProps {
   onDownloadExcel?: () => void;
@@ -22,6 +23,8 @@ export const FeedbackSheet: React.FC<FeedbackSheetProps> = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [moduleFilter, setModuleFilter] = useState<string>('all');
   const [reporterFilter, setReporterFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(25);
 
   useEffect(() => {
     let isMounted = true;
@@ -156,7 +159,10 @@ export const FeedbackSheet: React.FC<FeedbackSheetProps> = () => {
             type="text"
             placeholder="Search feedback notes, module, or reporter..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-300 rounded focus:outline-hidden focus:border-blue-500"
           />
         </div>
@@ -165,7 +171,10 @@ export const FeedbackSheet: React.FC<FeedbackSheetProps> = () => {
           <label className="text-xs text-slate-600 font-medium">Module:</label>
           <select
             value={moduleFilter}
-            onChange={(e) => setModuleFilter(e.target.value)}
+            onChange={(e) => {
+              setModuleFilter(e.target.value);
+              setCurrentPage(1);
+            }}
             className="text-xs border border-slate-300 rounded px-2.5 py-1.5 bg-white text-slate-700 focus:outline-hidden"
           >
             <option value="all">All Modules ({data.modules.length})</option>
@@ -180,7 +189,10 @@ export const FeedbackSheet: React.FC<FeedbackSheetProps> = () => {
             <label className="text-xs text-slate-600 font-medium">Reported By:</label>
             <select
               value={reporterFilter}
-              onChange={(e) => setReporterFilter(e.target.value)}
+              onChange={(e) => {
+                setReporterFilter(e.target.value);
+                setCurrentPage(1);
+              }}
               className="text-xs border border-slate-300 rounded px-2.5 py-1.5 bg-white text-slate-700 focus:outline-hidden"
             >
               <option value="all">All Reporters</option>
@@ -197,6 +209,7 @@ export const FeedbackSheet: React.FC<FeedbackSheetProps> = () => {
               setSearchTerm('');
               setModuleFilter('all');
               setReporterFilter('all');
+              setCurrentPage(1);
             }}
             className="text-xs text-blue-600 hover:text-blue-800 underline font-medium"
           >
@@ -235,7 +248,7 @@ export const FeedbackSheet: React.FC<FeedbackSheetProps> = () => {
                   </td>
                 </tr>
               ) : (
-                filteredFeedback.map((fb, idx) => (
+                filteredFeedback.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((fb, idx) => (
                   <tr 
                     key={fb.id || idx}
                     className="hover:bg-blue-50/60 transition-colors group text-slate-800 even:bg-slate-50/50"
@@ -286,6 +299,18 @@ export const FeedbackSheet: React.FC<FeedbackSheetProps> = () => {
             </tfoot>
           </table>
         </div>
+
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredFeedback.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(newSize) => {
+            setPageSize(newSize);
+            setCurrentPage(1);
+          }}
+          pageSizeOptions={[10, 25, 50, 100]}
+        />
       </div>
     </div>
   );

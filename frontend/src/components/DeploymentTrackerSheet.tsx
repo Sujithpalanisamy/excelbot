@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Download,
   Printer,
@@ -8,10 +8,13 @@ import {
   Bug,
   CheckCircle2,
   Clock,
-  ExternalLink
+  ExternalLink,
+  Plus
 } from 'lucide-react';
 import type { DeploymentTrackerData } from '../types';
 import { api } from '../services/api';
+import { Pagination } from './Pagination';
+import { AddDeploymentModal } from './AddDeploymentModal';
 
 interface DeploymentTrackerSheetProps {
   onNavigateToSheet1WithFilter?: (filterType: string, filterValue: string) => void;
@@ -27,23 +30,24 @@ export const DeploymentTrackerSheet: React.FC<DeploymentTrackerSheetProps> = ({
   const [filterType, setFilterType] = useState<string>('all');
   const [filterQaStatus, setFilterQaStatus] = useState<string>('all');
   const [selectedDate, setSelectedDate] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(25);
+  const [isAddDeploymentOpen, setIsAddDeploymentOpen] = useState(false);
+
+  const fetchDeployments = useCallback(async () => {
+    try {
+      const res = await api.getDeploymentTrackerData();
+      setData(res);
+    } catch (err) {
+      console.error('Failed to load deployment tracker data:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    let isMounted = true;
-    const fetchDeployments = async () => {
-      try {
-        const res = await api.getDeploymentTrackerData();
-        if (isMounted) setData(res);
-      } catch (err) {
-        console.error('Failed to load deployment tracker data:', err);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
-
     fetchDeployments();
-    return () => { isMounted = false; };
-  }, []);
+  }, [fetchDeployments]);
 
   const handleExportCsv = () => {
     if (!data) return;
@@ -91,6 +95,8 @@ export const DeploymentTrackerSheet: React.FC<DeploymentTrackerSheetProps> = ({
     return matchesSearch && matchesType && matchesQa && matchesDate;
   });
 
+  const paginatedDeployments = filteredDeployments.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   const uniqueQaStatuses = Array.from(new Set(data.deployments.map(d => d.qaStatus).filter(Boolean)));
 
   return (
@@ -109,8 +115,16 @@ export const DeploymentTrackerSheet: React.FC<DeploymentTrackerSheetProps> = ({
 
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setIsAddDeploymentOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#1b365d] hover:bg-[#234575] rounded transition-colors shadow-2xs cursor-pointer"
+            title="Record a manual deployment into database"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>+ Add Deployment</span>
+          </button>
+          <button
             onClick={handleExportCsv}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded transition-colors cursor-pointer"
             title="Export filtered records to CSV"
           >
             <Download className="w-3.5 h-3.5 text-slate-600" />
@@ -118,7 +132,7 @@ export const DeploymentTrackerSheet: React.FC<DeploymentTrackerSheetProps> = ({
           </button>
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded transition-colors cursor-pointer"
             title="Print sheet"
           >
             <Printer className="w-3.5 h-3.5 text-slate-600" />
@@ -272,7 +286,7 @@ export const DeploymentTrackerSheet: React.FC<DeploymentTrackerSheetProps> = ({
                   </td>
                 </tr>
               ) : (
-                filteredDeployments.map((d, idx) => {
+                paginatedDeployments.map((d, idx) => {
                   const isBug = d.type.toLowerCase() === 'bug';
                   const isClosed = (d.status || '').toLowerCase().includes('closed');
                   const isQaDone = (d.qaStatus || '').toLowerCase().includes('pass') || (d.qaStatus || '').toLowerCase().includes('done') || (d.qaStatus || '').toLowerCase().includes('verified');
@@ -400,7 +414,23 @@ export const DeploymentTrackerSheet: React.FC<DeploymentTrackerSheetProps> = ({
             </tfoot>
           </table>
         </div>
+
+        {/* Pagination Bar */}
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredDeployments.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          pageSizeOptions={[25, 50, 100, 200]}
+        />
       </div>
+
+      <AddDeploymentModal
+        isOpen={isAddDeploymentOpen}
+        onClose={() => setIsAddDeploymentOpen(false)}
+        onSuccess={fetchDeployments}
+      />
     </div>
   );
 };
